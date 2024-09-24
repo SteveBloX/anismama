@@ -6,6 +6,8 @@ import { Input } from "~/components/ui/input";
 import { useState } from "react";
 import { normalizeString } from "~/utils";
 import { MultiSelect } from "~/components/multi-select";
+import { prisma } from "~/db.server";
+import { getUser } from "~/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,7 +16,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getUser(request);
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
   const text = await res.text();
   const root = parse(text);
@@ -35,7 +38,16 @@ export const loader: LoaderFunction = async () => {
       .map((tag) => tag.replace(",", ""));
     return { title, link, img, alias, id, tags };
   });
-  return { scans };
+  let progressions = [];
+  if (user) {
+    progressions = await prisma.mangaProgression.findMany({
+      where: {
+        userId: user.id,
+        finished: false,
+      },
+    });
+  }
+  return { scans, progressions };
 };
 type Scan = {
   title: string;
@@ -49,17 +61,19 @@ type Scan = {
 export default function Index() {
   const {
     scans,
+    progressions,
   }: {
     scans: Scan[];
-  } = useLoaderData();
+    progressions: { mangaId: string; progress: string }[];
+  } = useLoaderData() as any;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const filteredScans = scans.filter(
     (scan) =>
-      normalizeString(scan.title).includes(normalizeString(searchTerm)) ||
-      (normalizeString(scan.alias).includes(normalizeString(searchTerm)) &&
-        selectedTags.length === 0) ||
-      selectedTags.some((tag) => scan.tags.includes(tag.value))
+      (normalizeString(scan.title).includes(normalizeString(searchTerm)) ||
+        normalizeString(scan.alias).includes(normalizeString(searchTerm))) &&
+      (selectedTags.length === 0 ||
+        selectedTags.every((tag) => scan.tags.includes(tag)))
   );
   const [tagsList] = useState(
     [...new Set(scans.map((scan) => scan.tags).flat())].map((tag) => ({
@@ -69,7 +83,29 @@ export default function Index() {
   );
 
   return (
-    <div className="p-5">
+    <div className="p-5 text-center">
+      <div className="justify-center flex">
+        {progressions.length > 0 && (
+          <div className="mb-5 w-2/3">
+            <h1 className="text-3xl font-bold">Reprendre</h1>
+            <div className="grid grid-cols-3 grid-row-1">
+              {progressions.map((manga) => (
+                <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
+                  <img
+                    src={scans.find((scan) => scan.id === manga.mangaId)?.img}
+                    alt={scans.find((scan) => scan.id === manga.mangaId)?.title}
+                    className="rounded-lg"
+                  />
+                  <h1 className="mt-2">
+                    {scans.find((scan) => scan.id === manga.mangaId)?.title}
+                  </h1>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className={"flex justify-center"}>
         <Input
           placeholder="Search"
@@ -85,7 +121,7 @@ export default function Index() {
       </div>
       <div className="grid grid-cols-5 gap-4">
         {filteredScans.map((manga) => (
-          <Link to={`/read/${manga.id}/1`}>
+          <Link to={`/read/${manga.id}/1`} target="_blank">
             <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
               <img src={manga.img} alt={manga.title} className="rounded-lg" />
               <h1 className="mt-2">{manga.title}</h1>
