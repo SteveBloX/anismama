@@ -143,7 +143,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         },
       });
     }
-    console.log("done");
     return new Response(null, { status: 200 });
   } else if (action === Action.SetProgress) {
     const progress = JSON.parse(data.get("progress") as string) as {
@@ -167,7 +166,13 @@ export const action: ActionFunction = async ({ request, params }) => {
           totalPages: progress.totalPages,
         },
       };
-      console.log(newProgress);
+      console.log(
+        "Saving progress for manga " +
+          params.name +
+          " (chapter " +
+          progress.chapter +
+          ")"
+      );
       await prisma.mangaProgression.update({
         where: {
           id: progressData.id,
@@ -192,7 +197,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         },
       });
     }
-    console.log("Saved progress");
     return new Response(null, { status: 200 });
   }
   return new Response(null, { status: 200 });
@@ -247,7 +251,6 @@ export default function Read() {
     5000,
     saveProgress
   );
-  console.log("Debounced val: " + debouncedCenterElId);
 
   useEffect(() => {
     const detectCenterElement = () => {
@@ -355,7 +358,7 @@ export default function Read() {
           </SelectContent>
         </Select>
       </div>
-      <div className="w-full px-2 lg:px-0 lg:w-1/2">
+      <div className="w-full px-2 lg:px-0 lg:flex justify-center">
         {/*<Select onValueChange={(val) => navigate(val)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder={"Chapitre " + data.chapterNumber} />
@@ -371,7 +374,7 @@ export default function Read() {
           </SelectContent>
         </Select>*/}
 
-        <div className="flex flex-col">
+        <div className="flex flex-col lg:w-1/2">
           {Array(data.pagesAmount)
             .fill(0)
             .map((_, i) => (
@@ -384,35 +387,33 @@ export default function Read() {
               />
             ))}
         </div>
-        <div className="justify-center flex">
-          <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2">
-            <Button
-              disabled={parseInt(data.chapterNumber) <= 1}
-              onClick={() =>
-                navigate(
-                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
-                )
-              }
-              className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
-            >
-              Précédent
-            </Button>
-            <Button
-              disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
-              onClick={() =>
-                navigate(
-                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
-                )
-              }
-              className={
-                parseInt(data.chapterNumber) < data.chaptersAmount
-                  ? "w-full"
-                  : ""
-              }
-            >
-              Suivant
-            </Button>
-          </div>
+      </div>
+      <div className="justify-center flex">
+        <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2">
+          <Button
+            disabled={parseInt(data.chapterNumber) <= 1}
+            onClick={() =>
+              navigate(
+                `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
+              )
+            }
+            className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
+          >
+            Précédent
+          </Button>
+          <Button
+            disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+            onClick={() =>
+              navigate(
+                `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
+              )
+            }
+            className={
+              parseInt(data.chapterNumber) < data.chaptersAmount ? "w-full" : ""
+            }
+          >
+            Suivant
+          </Button>
         </div>
       </div>
     </div>

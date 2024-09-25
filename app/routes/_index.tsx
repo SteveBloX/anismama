@@ -54,6 +54,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         userId: user.id,
         finished: false,
       },
+      orderBy: {
+        updatedAt: "desc",
+      },
     });
     favoriteMangas = await prisma.favoritedManga.findMany({
       where: {
@@ -130,7 +133,6 @@ export default function Index() {
                       progress[lastChapter].totalPages) *
                     100
                   }%`;
-                  console.log(progressPercentage);
                   const lastChapterNum = parseInt(lastChapter);
                   return (
                     <CarouselItem className="lg:basis-1/3">
@@ -224,29 +226,82 @@ export default function Index() {
           </div>
         )}
       </div>
+      <div className="justify-center flex">
+        {watchlist.length > 0 && (
+          <div className="mb-5 w-2/3">
+            <h1 className="text-3xl font-bold text-center mb-3">Watchlist</h1>
+            <Carousel className="">
+              <CarouselContent className="mb-5">
+                {watchlist.map((manga) => (
+                  <CarouselItem className="lg:basis-1/3">
+                    <Link
+                      className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
+                      to={`/read/${manga.mangaId}/latest`}
+                    >
+                      <div>
+                        <img
+                          src={
+                            scans.find((scan) => scan.id === manga.mangaId)?.img
+                          }
+                          alt={
+                            scans.find((scan) => scan.id === manga.mangaId)
+                              ?.title
+                          }
+                          className="rounded-lg"
+                        />
 
-      <div className={"flex justify-center"}>
-        <Input
-          placeholder="Search"
-          className="shadow-lg w-1/2 p-5 mb-5"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <MultiSelect
-          options={tagsList}
-          onValueChange={setSelectedTags}
-          value={selectedTags}
-        />
+                        <h1 className="mt-2">
+                          {
+                            scans.find((scan) => scan.id === manga.mangaId)
+                              ?.title
+                          }
+                        </h1>
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselNext />
+              <CarouselPrevious />
+            </Carousel>
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-5 gap-4">
-        {filteredScans.map((manga) => (
-          <Link to={`/read/${manga.id}/1`} target="_blank">
-            <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
-              <img src={manga.img} alt={manga.title} className="rounded-lg" />
-              <h1 className="mt-2">{manga.title}</h1>
-            </div>
-          </Link>
-        ))}
+      <div>
+        <h1 className="text-3xl font-bold text-center mb-3">Recherche</h1>
+        <div className="flex justify-center w-full">
+          <div className="flex justify-center flex-col lg:flex-row mb-3 lg:mb-5 gap-1 lg:w-1/2">
+            <Input
+              placeholder="Rechercher"
+              className="shadow-none lg:shadow-lg lg:w-2/3 p-5"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <MultiSelect
+              options={tagsList}
+              onValueChange={setSelectedTags}
+              value={selectedTags}
+              placeholder="Genre"
+              className="lg:w-1/3 shadow-none lg:shadow-lg"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
+          {filteredScans.map((manga) => (
+            <Link to={`/read/${manga.id}/1`} target="_blank">
+              <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
+                <img
+                  src={manga.img}
+                  alt={manga.title}
+                  className="rounded-lg"
+                  loading="lazy"
+                />
+                <h1 className="mt-2">{manga.title}</h1>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
