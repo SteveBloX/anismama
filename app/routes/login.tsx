@@ -55,7 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { status: 400 }
     );
   }
-
+  console.log("Login successful");
   return createUserSession({
     redirectTo,
     remember: remember === "on" ? true : false,
