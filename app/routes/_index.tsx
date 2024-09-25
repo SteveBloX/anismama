@@ -25,6 +25,7 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
+  console.log(user);
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
   const text = await res.text();
   const root = parse(text);
