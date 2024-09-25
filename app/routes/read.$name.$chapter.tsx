@@ -1,4 +1,4 @@
-import { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { ActionFunction, LoaderFunction, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import {
   Select,
@@ -7,13 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { ClockArrowUp, Home, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, ClockArrowUp, Home, Star } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { getUser } from "~/session.server";
 import { prisma } from "~/db.server";
 import { submit } from "~/utils";
 import { useEffect, useState } from "react";
 import useDebounce from "~/hooks/useDebounce";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -22,6 +24,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let page = null;
   if (!params.name || !params.chapter)
     return new Response(null, { status: 400 });
+  if (params.chapter === "latest" && !user) {
+    return redirect(`/read/${params.name}/1`);
+  } else if (params.chapter === "latest" && user) {
+    const progressData = await prisma.mangaProgression.findFirst({
+      where: {
+        userId: user.id,
+        mangaId: params.name,
+      },
+    });
+    if (progressData) {
+      const progress = JSON.parse(progressData.progress);
+      const latestChapter = Object.keys(progress).sort((a, b) => b - a)[0];
+      return redirect(`/read/${params.name}/${latestChapter}`);
+    }
+  }
   if (user) {
     isFavorited = !!(await prisma.favoritedManga.findFirst({
       where: {
@@ -42,7 +59,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       },
     });
     if (progressData) {
-      page = JSON.parse(progressData?.progress)[params.chapter].currentPage;
+      const pageData = JSON.parse(progressData?.progress)[params.chapter];
+      if (pageData) {
+        page = pageData.currentPage;
+      }
     }
   }
   // get chapters amount
@@ -139,12 +159,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       },
     });
     if (progressData) {
-      const oldProgress = JSON.parse(data.get("progress") as string) as {
-        [chapterNumber: string]: {
-          currentPage: number;
-          totalPages: number;
-        };
-      };
+      const oldProgress = JSON.parse(progressData.progress);
       const newProgress = {
         ...oldProgress,
         [progress.chapter]: {
@@ -152,6 +167,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           totalPages: progress.totalPages,
         },
       };
+      console.log(newProgress);
       await prisma.mangaProgression.update({
         where: {
           id: progressData.id,
@@ -267,10 +283,65 @@ export default function Read() {
     }
   }, []);
   return (
-    <div className="flex justify-center">
-      <div className="w-1/2">
+    <div className="flex flex-col justify-center">
+      <div className="lg:fixed top-2 left-3 border border-gray-200 rounded-md backdrop-blur-lg p-1 flex flex-col gap-1">
+        <ToggleGroup
+          onValueChange={toggleOption}
+          variant="default"
+          type="multiple"
+          defaultValue={[
+            ...(data.isFavorited ? ["favorite"] : []),
+            ...(data.isWatchlisted ? ["watchlist"] : []),
+          ]}
+        >
+          <ToggleGroupItem value="home">
+            <Home />
+          </ToggleGroupItem>
+          {data.isConnected && (
+            <>
+              <ToggleGroupItem value="favorite">
+                <Star />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="watchlist">
+                <ClockArrowUp />
+              </ToggleGroupItem>
+            </>
+          )}
+        </ToggleGroup>
+        <Separator />
+        <ToggleGroup
+          type="single"
+          onValueChange={(vals) => {
+            if (vals.includes("previous")) {
+              navigate(
+                `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
+              );
+            } else if (vals.includes("next")) {
+              navigate(
+                `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
+              );
+            }
+          }}
+          value={[]}
+        >
+          <ToggleGroupItem
+            value="previous"
+            className="w-full"
+            disabled={parseInt(data.chapterNumber) <= 1}
+          >
+            <ArrowLeft />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="next"
+            className="w-full"
+            disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+          >
+            <ArrowRight />
+          </ToggleGroupItem>
+        </ToggleGroup>
+        <Separator />
         <Select onValueChange={(val) => navigate(val)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder={"Chapitre " + data.chapterNumber} />
           </SelectTrigger>
           <SelectContent>
@@ -283,29 +354,22 @@ export default function Read() {
               ))}
           </SelectContent>
         </Select>
-        {data.isConnected && (
-          <div className="fixed top-2 left-3 border border-gray-200 rounded-md backdrop-blur-sm p-1">
-            <ToggleGroup
-              onValueChange={toggleOption}
-              variant="default"
-              type="multiple"
-              defaultValue={[
-                ...(data.isFavorited ? ["favorite"] : []),
-                ...(data.isWatchlisted ? ["watchlist"] : []),
-              ]}
-            >
-              <ToggleGroupItem value="home">
-                <Home />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="favorite">
-                <Star />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="watchlist">
-                <ClockArrowUp />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        )}
+      </div>
+      <div className="w-full px-2 lg:px-0 lg:w-1/2">
+        {/*<Select onValueChange={(val) => navigate(val)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder={"Chapitre " + data.chapterNumber} />
+          </SelectTrigger>
+          <SelectContent>
+            {Array(data.chaptersAmount)
+              .fill(0)
+              .map((_, i) => (
+                <SelectItem key={i} value={`/read/${data.mangaName}/${i + 1}`}>
+                  Chapter {i + 1}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>*/}
 
         <div className="flex flex-col">
           {Array(data.pagesAmount)
@@ -319,6 +383,36 @@ export default function Read() {
                 id={`page-${i}`}
               />
             ))}
+        </div>
+        <div className="justify-center flex">
+          <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2">
+            <Button
+              disabled={parseInt(data.chapterNumber) <= 1}
+              onClick={() =>
+                navigate(
+                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
+                )
+              }
+              className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
+            >
+              Précédent
+            </Button>
+            <Button
+              disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+              onClick={() =>
+                navigate(
+                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
+                )
+              }
+              className={
+                parseInt(data.chapterNumber) < data.chaptersAmount
+                  ? "w-full"
+                  : ""
+              }
+            >
+              Suivant
+            </Button>
+          </div>
         </div>
       </div>
     </div>
