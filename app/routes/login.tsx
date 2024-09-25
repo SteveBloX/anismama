@@ -10,6 +10,8 @@ import { useEffect, useRef } from "react";
 import { verifyLogin } from "~/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
@@ -91,7 +93,7 @@ export default function LoginPage() {
               Email address
             </label>
             <div className="mt-1">
-              <input
+              <Input
                 ref={emailRef}
                 id="email"
                 required
@@ -120,7 +122,7 @@ export default function LoginPage() {
               Password
             </label>
             <div className="mt-1">
-              <input
+              <Input
                 id="password"
                 ref={passwordRef}
                 name="password"
@@ -139,15 +141,15 @@ export default function LoginPage() {
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <button
+          <Button
             type="submit"
             className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
           >
             Log in
-          </button>
+          </Button>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <input
+              <Input
                 id="remember"
                 name="remember"
                 type="checkbox"
