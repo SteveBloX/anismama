@@ -325,8 +325,8 @@ export default function Read() {
   }
     
   return (
-    <div className="flex flex-col justify-center pt-[180px]">
-      <div className="fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 rounded-md backdrop-blur-3xl p-1 flex flex-col gap-1">
+    <div className="flex flex-col justify-center">
+      <div className="lg:fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 lg:rounded-md lg:-blur-3xl p-1 flex flex-col gap-1 mb-5">
         <ToggleGroup
           onValueChange={toggleOption}
           variant="default"
@@ -342,7 +342,7 @@ export default function Read() {
           {data.isConnected && (
             <>
               <ToggleGroupItem value="favorite">
-                <Star />
+                <Star fill={data.isFavorited ? "#000" : "#fff"} />
               </ToggleGroupItem>
               <ToggleGroupItem value="watchlist">
                 <ClockArrowUp />

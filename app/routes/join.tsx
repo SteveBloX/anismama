@@ -29,27 +29,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
+      { errors: { email: "L'e-mail est invalide", password: null } },
       { status: 400 }
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { email: null, password: "Password is required" } },
+      { errors: { email: null, password: "Le mot de passe est requis" } },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { email: null, password: "Password is too short" } },
+      { errors: { email: null, password: "Le mot de passe est trop court" } },
       { status: 400 }
     );
   }
   if (typeof username !== "string" || username.length === 0) {
     return json(
-      { errors: { email: null, password: "Username is required" } },
+      { errors: { email: null, password: "Le nom d'utilisateur est requis" } },
       { status: 400 }
     );
   }
@@ -60,7 +60,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
-          email: "A user already exists with this username",
+          email: "Un utilisateur existe déjà avec ce nom d'utilisateur",
           password: null,
         },
       },
@@ -72,7 +72,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
-          email: "A user already exists with this email",
+          email: "Un utilisateur existe déjà avec cet e-mail",
           password: null,
         },
       },
@@ -108,7 +108,7 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex flex-col justify-center h-[100vh] w-[100vw]">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6">
           <div>

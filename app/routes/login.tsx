@@ -28,21 +28,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
+      { errors: { email: "L'e-mail est invalide", password: null } },
       { status: 400 }
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { email: null, password: "Password is required" } },
+      { errors: { email: null, password: "Le mot de passe est requis" } },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { email: null, password: "Password is too short" } },
+      { errors: { email: null, password: "Le mot de passe est trop court" } },
       { status: 400 }
     );
   }
@@ -51,7 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (!user) {
     return json(
-      { errors: { email: "Invalid email or password", password: null } },
+      { errors: { email: "Mauvaise e-mail ou mot de passe", password: null } },
       { status: 400 }
     );
   }
@@ -82,7 +82,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex h-[100vh] w-[100vw] flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6">
           <div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              Adresse e-mail
             </label>
             <div className="mt-1">
               <Input
@@ -119,7 +119,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              Mot de passe
             </label>
             <div className="mt-1">
               <Input
@@ -145,7 +145,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full"
           >
-            Log in
+            Se connecter
           </Button>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -159,11 +159,11 @@ export default function LoginPage() {
                 htmlFor="remember"
                 className="ml-2 block text-sm text-gray-900"
               >
-                Remember me
+                Se souvenir de moi
               </label>
             </div>
             <div className="text-center text-sm text-gray-500">
-              Don&apos;t have an account?{" "}
+              Vous n'avez pas de compte ?{" "}
               <Link
                 className="text-blue-500 underline"
                 to={{
@@ -171,7 +171,7 @@ export default function LoginPage() {
                   search: searchParams.toString(),
                 }}
               >
-                Sign up
+                S'enregistrer              
               </Link>
             </div>
           </div>

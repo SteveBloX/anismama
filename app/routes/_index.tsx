@@ -15,11 +15,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "~/components/ui/carousel";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "Anismama" },
+    { name: "description", content: "Anismama!" },
   ];
 };
 
@@ -70,7 +71,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     });
   }
-  return { scans, progressions, favoriteMangas, watchlist };
+  return { scans, progressions, favoriteMangas, watchlist, loggedIn: !!user };
 };
 type Scan = {
   title: string;
@@ -87,11 +88,13 @@ export default function Index() {
     progressions,
     favoriteMangas,
     watchlist,
+    loggedIn,
   }: {
     scans: Scan[];
     progressions: { mangaId: string; progress: string }[];
     favoriteMangas: { mangaId: string }[];
     watchlist: { mangaId: string }[];
+    loggedIn: boolean;
   } = useLoaderData() as any;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
@@ -111,6 +114,14 @@ export default function Index() {
 
   return (
     <div className="p-5">
+      <div className="w-full flex justify-end">
+    {!loggedIn ? (<div className="flex gap-2"><Link to="/login"><Button className="mb-5">
+      Se connecter
+    </Button></Link><Link to="/join"><Button className="mb-5">
+      S'inscrire
+    </Button></Link></div>) : (<Link to="/logout"><Button className="mb-5">
+      Se déconnecter
+      </Button></Link>)}</div>
       <div className="justify-center flex">
         {progressions.length > 0 && (
           <div className="mb-5 w-2/3">
@@ -290,7 +301,7 @@ export default function Index() {
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
           {filteredScans.map((manga) => (
-            <Link to={`/read/${manga.id}/1`} target="_blank">
+            <Link to={`/read/${manga.id}/1`}>
               <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
                 <img
                   src={manga.img}
