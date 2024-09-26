@@ -50,6 +50,7 @@ model MangaProgression {
   mangaId   String
   progress  String // json
   finished  Boolean
+  timesFinished Int @default(0)
 }
 
 model Password {

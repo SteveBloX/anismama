@@ -100,6 +100,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 enum Action {
   SetOptions = "setOptions",
   SetProgress = "setProgress",
+  FinishManga = "finishManga"
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -198,6 +199,34 @@ export const action: ActionFunction = async ({ request, params }) => {
       });
     }
     return new Response(null, { status: 200 });
+  } else if (action === Action.FinishManga) {
+    const progressData = await prisma.mangaProgression.findFirst({
+      where: {
+        userId: user.id,
+        mangaId: params.name,
+      },
+    });
+    if (progressData) {
+      if (progressData.finished) return new Response(null, { status: 200 });
+      await prisma.mangaProgression.update({
+        where: {
+          id: progressData.id,
+        },
+        data: {
+          finished: true,
+          progress: JSON.stringify({
+            ...JSON.parse(progressData.progress),
+            [params.chapter]: {
+              currentPage: JSON.parse(progressData.progress)[params.chapter].totalPages,
+              totalPages: JSON.parse(progressData.progress)[params.chapter].totalPages
+            }
+          }),
+          timesFinished: {
+            increment: 1,
+          }
+        },
+      });
+    }
   }
   return new Response(null, { status: 200 });
 };
@@ -285,9 +314,19 @@ export default function Read() {
       console.log("Scrolled to page " + data.page);
     }
   }, []);
+  async function finish () {
+    if (data.isConnected) {
+      await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
+        action: Action.FinishManga
+      }
+      )
+    }
+      navigate("/")
+  }
+    
   return (
-    <div className="flex flex-col justify-center">
-      <div className="lg:fixed top-2 left-3 border border-gray-200 rounded-md backdrop-blur-lg p-1 flex flex-col gap-1">
+    <div className="flex flex-col justify-center pt-[180px]">
+      <div className="fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 rounded-md backdrop-blur-3xl p-1 flex flex-col gap-1">
         <ToggleGroup
           onValueChange={toggleOption}
           variant="default"
@@ -352,28 +391,13 @@ export default function Read() {
               .fill(0)
               .map((_, i) => (
                 <SelectItem key={i} value={`/read/${data.mangaName}/${i + 1}`}>
-                  Chapter {i + 1}
+                  Chapitre {i + 1}
                 </SelectItem>
               ))}
           </SelectContent>
         </Select>
       </div>
       <div className="w-full px-2 lg:px-0 lg:flex justify-center">
-        {/*<Select onValueChange={(val) => navigate(val)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={"Chapitre " + data.chapterNumber} />
-          </SelectTrigger>
-          <SelectContent>
-            {Array(data.chaptersAmount)
-              .fill(0)
-              .map((_, i) => (
-                <SelectItem key={i} value={`/read/${data.mangaName}/${i + 1}`}>
-                  Chapter {i + 1}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>*/}
-
         <div className="flex flex-col lg:w-1/2">
           {Array(data.pagesAmount)
             .fill(0)
@@ -389,31 +413,37 @@ export default function Read() {
         </div>
       </div>
       <div className="justify-center flex">
-        <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2">
-          <Button
-            disabled={parseInt(data.chapterNumber) <= 1}
-            onClick={() =>
-              navigate(
-                `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
-              )
-            }
-            className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
-          >
-            Précédent
-          </Button>
-          <Button
-            disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
-            onClick={() =>
-              navigate(
-                `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
-              )
-            }
-            className={
-              parseInt(data.chapterNumber) < data.chaptersAmount ? "w-full" : ""
-            }
-          >
-            Suivant
-          </Button>
+        <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2 mx-3 lg:mx-0">
+          {(parseInt(data.chapterNumber) < data.chaptersAmount) ? (
+            <>
+            
+            <Button
+              disabled={parseInt(data.chapterNumber) <= 1}
+              onClick={() =>
+                navigate(
+                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
+                )
+              }
+              className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
+            >
+              Précédent
+            </Button>
+            <Button
+              disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+              onClick={() =>
+                navigate(
+                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
+                )
+              }
+              className={
+                parseInt(data.chapterNumber) < data.chaptersAmount ? "w-full" : ""
+              }
+            >
+              Suivant
+            </Button></>
+          ) : (
+            <Button onClick={finish} className="w-full">Terminer</Button>
+          )}
         </div>
       </div>
     </div>
