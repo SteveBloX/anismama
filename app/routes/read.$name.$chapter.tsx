@@ -24,45 +24,29 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let page = null;
   if (!params.name || !params.chapter)
     return new Response(null, { status: 400 });
-  if (params.chapter === "latest" && !user) {
-    return redirect(`/read/${params.name}/1`);
-  } else if (params.chapter === "latest" && user) {
-    const progressData = await prisma.mangaProgression.findFirst({
+  let userManga;
+  if (user) {
+    userManga = await prisma.userManga.findFirst({
       where: {
         userId: user.id,
         mangaId: params.name,
       },
     });
-    if (progressData) {
-      const progress = JSON.parse(progressData.progress);
+  }
+  if (params.chapter === "latest" && !user) {
+    return redirect(`/read/${params.name}/1`);
+  }
+  if (userManga) {
+    if (params.chapter === "latest") {
+      const progress = JSON.parse(userManga.progress);
       const latestChapter = Object.keys(progress).sort((a, b) => b - a)[0];
       return redirect(`/read/${params.name}/${latestChapter}`);
     }
-  }
-  if (user) {
-    isFavorited = !!(await prisma.favoritedManga.findFirst({
-      where: {
-        userId: user.id,
-        mangaId: params.name,
-      },
-    }));
-    isWatchlisted = !!(await prisma.watchlistedManga.findFirst({
-      where: {
-        userId: user.id,
-        mangaId: params.name,
-      },
-    }));
-    const progressData = await prisma.mangaProgression.findFirst({
-      where: {
-        userId: user?.id,
-        mangaId: params.name,
-      },
-    });
-    if (progressData) {
-      const pageData = JSON.parse(progressData?.progress)[params.chapter];
-      if (pageData) {
-        page = pageData.currentPage;
-      }
+    isFavorited = userManga.isFavorited
+    isWatchlisted = userManga.isWatchlisted
+    const pageData = JSON.parse(userManga?.progress)[params.chapter];
+    if (pageData) {
+      page = pageData.currentPage;
     }
   }
   // get chapters amount
@@ -109,41 +93,33 @@ export const action: ActionFunction = async ({ request, params }) => {
   const data = await request.formData();
   const action = data.get("action");
   if (!params.name) return new Response(null, { status: 400 });
+  let userManga = await prisma.userManga.findFirst({
+    where: {
+      userId: user.id,
+      mangaId: params.name,
+    },
+  });
+  if (!userManga) {
+    userManga = await prisma.userManga.create({
+      data: {
+        userId: user.id,
+        mangaId: params.name,
+      },
+    }); 
+  }
   if (action === Action.SetOptions) {
     const isFavorited = data.get("isFavorited") === "true";
     const isWatchlisted = data.get("isWatchlisted") === "true";
-    const currentlyFavorited = data.get("currentlyFavorited") === "true";
-    const currentlyWatchlisted = data.get("currentlyWatchlisted") === "true";
-    if (isFavorited && !currentlyFavorited) {
-      await prisma.favoritedManga.create({
-        data: {
-          userId: user.id,
-          mangaId: params.name,
-        },
-      });
-    } else if (!isFavorited && currentlyFavorited) {
-      await prisma.favoritedManga.deleteMany({
-        where: {
-          userId: user.id,
-          mangaId: params.name,
-        },
-      });
-    }
-    if (isWatchlisted && !currentlyWatchlisted) {
-      await prisma.watchlistedManga.create({
-        data: {
-          userId: user.id,
-          mangaId: params.name,
-        },
-      });
-    } else if (!isWatchlisted && currentlyWatchlisted) {
-      await prisma.watchlistedManga.deleteMany({
-        where: {
-          userId: user.id,
-          mangaId: params.name,
-        },
-      });
-    }
+    await prisma.userManga.update({
+      where: {
+        id: userManga.id,
+      },
+      data: {
+        isFavorited,
+        isWatchlisted,
+      },
+    });
+  
     return new Response(null, { status: 200 });
   } else if (action === Action.SetProgress) {
     const progress = JSON.parse(data.get("progress") as string) as {
@@ -152,14 +128,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       chapter: number;
     };
     if (!progress) return new Response(null, { status: 400 });
-    const progressData = await prisma.mangaProgression.findFirst({
-      where: {
-        userId: user.id,
-        mangaId: params.name,
-      },
-    });
+    const progressData = userManga.progress
     if (progressData) {
-      const oldProgress = JSON.parse(progressData.progress);
+      const oldProgress = JSON.parse(progressData);
       const newProgress = {
         ...oldProgress,
         [progress.chapter]: {
@@ -174,51 +145,29 @@ export const action: ActionFunction = async ({ request, params }) => {
           progress.chapter +
           ")"
       );
-      await prisma.mangaProgression.update({
+      await prisma.userManga.update({
         where: {
-          id: progressData.id,
+          id: userManga.id,
         },
         data: {
           progress: JSON.stringify(newProgress),
-          finished: false,
         },
       });
-    } else {
-      await prisma.mangaProgression.create({
-        data: {
-          userId: user.id,
-          mangaId: params.name,
-          progress: JSON.stringify({
-            [progress.chapter]: {
-              currentPage: progress.page,
-              totalPages: progress.totalPages,
-            },
-          }),
-          finished: false,
-        },
-      });
-    }
+    } 
     return new Response(null, { status: 200 });
   } else if (action === Action.FinishManga) {
-    const progressData = await prisma.mangaProgression.findFirst({
-      where: {
-        userId: user.id,
-        mangaId: params.name,
-      },
-    });
-    if (progressData) {
-      if (progressData.finished) return new Response(null, { status: 200 });
-      await prisma.mangaProgression.update({
+      if (userManga.finished) return new Response(null, { status: 200 });
+      await prisma.userManga.update({
         where: {
-          id: progressData.id,
+          id: userManga.id,
         },
         data: {
           finished: true,
           progress: JSON.stringify({
-            ...JSON.parse(progressData.progress),
+            ...JSON.parse(userManga.progress),
             [params.chapter]: {
-              currentPage: JSON.parse(progressData.progress)[params.chapter].totalPages,
-              totalPages: JSON.parse(progressData.progress)[params.chapter].totalPages
+              currentPage: JSON.parse(userManga.progress)[params.chapter].totalPages,
+              totalPages: JSON.parse(userManga.progress)[params.chapter].totalPages
             }
           }),
           timesFinished: {
@@ -226,7 +175,6 @@ export const action: ActionFunction = async ({ request, params }) => {
           }
         },
       });
-    }
   }
   return new Response(null, { status: 200 });
 };

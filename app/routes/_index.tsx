@@ -16,6 +16,7 @@ import {
   CarouselPrevious,
 } from "~/components/ui/carousel";
 import { Button } from "~/components/ui/button";
+import { UserManga } from "@prisma/client";
 
 export const meta: MetaFunction = () => {
   return [
@@ -47,31 +48,13 @@ export const loader: LoaderFunction = async ({ request }) => {
       .map((tag) => tag.replace(",", ""));
     return { title, link, img, alias, id, tags };
   });
-  let progressions = [];
-  let favoriteMangas = [];
-  let watchlist = [];
+  let userMangas: UserManga[] = [];
   if (user) {
-    progressions = await prisma.mangaProgression.findMany({
-      where: {
-        userId: user.id,
-        finished: false,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
-    favoriteMangas = await prisma.favoritedManga.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
-    watchlist = await prisma.watchlistedManga.findMany({
-      where: {
-        userId: user.id,
-      },
+    userMangas = await prisma.userManga.findMany({
+      where: { userId: user.id },
     });
   }
-  return { scans, progressions, favoriteMangas, watchlist, loggedIn: !!user };
+  return { scans, userMangas, loggedIn: !!user };
 };
 type Scan = {
   title: string;
@@ -85,15 +68,11 @@ type Scan = {
 export default function Index() {
   const {
     scans,
-    progressions,
-    favoriteMangas,
-    watchlist,
+    userMangas,
     loggedIn,
   }: {
     scans: Scan[];
-    progressions: { mangaId: string; progress: string }[];
-    favoriteMangas: { mangaId: string }[];
-    watchlist: { mangaId: string }[];
+    userMangas: UserManga[];
     loggedIn: boolean;
   } = useLoaderData() as any;
   const [searchTerm, setSearchTerm] = useState("");
@@ -207,7 +186,7 @@ export default function Index() {
                   <CarouselItem className="lg:basis-1/3">
                     <Link
                       className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
-                      to={`/read/${manga.mangaId}/latest`}
+                      to={`/manga/${manga.mangaId}`}
                     >
                       <div>
                         <img
@@ -248,7 +227,7 @@ export default function Index() {
                   <CarouselItem className="lg:basis-1/3">
                     <Link
                       className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
-                      to={`/read/${manga.mangaId}/latest`}
+                      to={`/manga/${manga.mangaId}`}
                     >
                       <div>
                         <img
@@ -301,7 +280,7 @@ export default function Index() {
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
           {filteredScans.map((manga) => (
-            <Link to={`/read/${manga.id}/1`}>
+            <Link to={`/manga/${manga.id}`}>
               <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
                 <img
                   src={manga.img}
