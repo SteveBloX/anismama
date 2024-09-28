@@ -42,8 +42,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       const latestChapter = Object.keys(progress).sort((a, b) => b - a)[0];
       return redirect(`/read/${params.name}/${latestChapter}`);
     }
-    isFavorited = userManga.isFavorited
-    isWatchlisted = userManga.isWatchlisted
+    isFavorited = userManga.isFavorited;
+    isWatchlisted = userManga.isWatchlisted;
     const pageData = JSON.parse(userManga?.progress)[params.chapter];
     if (pageData) {
       page = pageData.currentPage;
@@ -84,7 +84,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 enum Action {
   SetOptions = "setOptions",
   SetProgress = "setProgress",
-  FinishManga = "finishManga"
+  FinishManga = "finishManga",
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -105,7 +105,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         userId: user.id,
         mangaId: params.name,
       },
-    }); 
+    });
   }
   if (action === Action.SetOptions) {
     const isFavorited = data.get("isFavorited") === "true";
@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         isWatchlisted,
       },
     });
-  
+
     return new Response(null, { status: 200 });
   } else if (action === Action.SetProgress) {
     const progress = JSON.parse(data.get("progress") as string) as {
@@ -128,7 +128,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       chapter: number;
     };
     if (!progress) return new Response(null, { status: 400 });
-    const progressData = userManga.progress
+    const progressData = userManga.progress;
     if (progressData) {
       const oldProgress = JSON.parse(progressData);
       const newProgress = {
@@ -153,28 +153,30 @@ export const action: ActionFunction = async ({ request, params }) => {
           progress: JSON.stringify(newProgress),
         },
       });
-    } 
+    }
     return new Response(null, { status: 200 });
   } else if (action === Action.FinishManga) {
-      if (userManga.finished) return new Response(null, { status: 200 });
-      await prisma.userManga.update({
-        where: {
-          id: userManga.id,
+    if (userManga.finished) return new Response(null, { status: 200 });
+    await prisma.userManga.update({
+      where: {
+        id: userManga.id,
+      },
+      data: {
+        finished: true,
+        progress: JSON.stringify({
+          ...JSON.parse(userManga.progress),
+          [params.chapter]: {
+            currentPage: JSON.parse(userManga.progress)[params.chapter]
+              .totalPages,
+            totalPages: JSON.parse(userManga.progress)[params.chapter]
+              .totalPages,
+          },
+        }),
+        timesFinished: {
+          increment: 1,
         },
-        data: {
-          finished: true,
-          progress: JSON.stringify({
-            ...JSON.parse(userManga.progress),
-            [params.chapter]: {
-              currentPage: JSON.parse(userManga.progress)[params.chapter].totalPages,
-              totalPages: JSON.parse(userManga.progress)[params.chapter].totalPages
-            }
-          }),
-          timesFinished: {
-            increment: 1,
-          }
-        },
-      });
+      },
+    });
   }
   return new Response(null, { status: 200 });
 };
@@ -262,16 +264,16 @@ export default function Read() {
       console.log("Scrolled to page " + data.page);
     }
   }, []);
-  async function finish () {
+
+  async function finish() {
     if (data.isConnected) {
       await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
-        action: Action.FinishManga
-      }
-      )
+        action: Action.FinishManga,
+      });
     }
-      navigate("/")
+    navigate("/");
   }
-    
+
   return (
     <div className="flex flex-col justify-center">
       <div className="lg:fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 lg:rounded-md lg:-blur-3xl p-1 flex flex-col gap-1 mb-5">
@@ -362,35 +364,43 @@ export default function Read() {
       </div>
       <div className="justify-center flex">
         <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2 mx-3 lg:mx-0">
-          {(parseInt(data.chapterNumber) < data.chaptersAmount) ? (
+          {parseInt(data.chapterNumber) < data.chaptersAmount ? (
             <>
-            
-            <Button
-              disabled={parseInt(data.chapterNumber) <= 1}
-              onClick={() =>
-                navigate(
-                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
-                )
-              }
-              className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
-            >
-              Précédent
-            </Button>
-            <Button
-              disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
-              onClick={() =>
-                navigate(
-                  `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
-                )
-              }
-              className={
-                parseInt(data.chapterNumber) < data.chaptersAmount ? "w-full" : ""
-              }
-            >
-              Suivant
-            </Button></>
+              <Button
+                disabled={parseInt(data.chapterNumber) <= 1}
+                onClick={() =>
+                  navigate(
+                    `/read/${data.mangaName}/${
+                      parseInt(data.chapterNumber) - 1
+                    }`
+                  )
+                }
+                className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
+              >
+                Précédent
+              </Button>
+              <Button
+                disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+                onClick={() =>
+                  navigate(
+                    `/read/${data.mangaName}/${
+                      parseInt(data.chapterNumber) + 1
+                    }`
+                  )
+                }
+                className={
+                  parseInt(data.chapterNumber) < data.chaptersAmount
+                    ? "w-full"
+                    : ""
+                }
+              >
+                Suivant
+              </Button>
+            </>
           ) : (
-            <Button onClick={finish} className="w-full">Terminer</Button>
+            <Button onClick={finish} className="w-full">
+              Terminer
+            </Button>
           )}
         </div>
       </div>

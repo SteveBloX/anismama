@@ -19,10 +19,7 @@ import { Button } from "~/components/ui/button";
 import { UserManga } from "@prisma/client";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "Anismama" },
-    { name: "description", content: "Anismama!" },
-  ];
+  return [{ title: "Anismama" }, { name: "description", content: "Anismama!" }];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -90,17 +87,28 @@ export default function Index() {
       value: tag,
     }))
   );
+  const progressions = userMangas.filter((manga) => manga.progression);
+  const favoriteMangas = userMangas.filter((manga) => manga.isFavorited);
+  const watchlist = userMangas.filter((manga) => manga.isWatchlisted);
 
   return (
     <div className="p-5">
       <div className="w-full flex justify-end">
-    {!loggedIn ? (<div className="flex gap-2"><Link to="/login"><Button className="mb-5">
-      Se connecter
-    </Button></Link><Link to="/join"><Button className="mb-5">
-      S'inscrire
-    </Button></Link></div>) : (<Link to="/logout"><Button className="mb-5">
-      Se déconnecter
-      </Button></Link>)}</div>
+        {!loggedIn ? (
+          <div className="flex gap-2">
+            <Link to="/login">
+              <Button className="mb-5">Se connecter</Button>
+            </Link>
+            <Link to="/join">
+              <Button className="mb-5">S'inscrire</Button>
+            </Link>
+          </div>
+        ) : (
+          <Link to="/logout">
+            <Button className="mb-5">Se déconnecter</Button>
+          </Link>
+        )}
+      </div>
       <div className="justify-center flex">
         {progressions.length > 0 && (
           <div className="mb-5 w-2/3">
@@ -279,8 +287,8 @@ export default function Index() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
-          {filteredScans.map((manga) => (
-            <Link to={`/manga/${manga.id}`}>
+          {filteredScans.map((manga, i) => (
+            <Link to={`/manga/${manga.id}`} key={i}>
               <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
                 <img
                   src={manga.img}

@@ -11,7 +11,7 @@ import { UserManga } from "@prisma/client";
 import { useState } from "react";
 import { Input } from "~/components/ui/input";
 import { normalizeString } from "~/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "~/components/ui/collapsible";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
