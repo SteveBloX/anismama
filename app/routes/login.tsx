@@ -141,10 +141,7 @@ export default function LoginPage() {
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <Button
-            type="submit"
-            className="w-full"
-          >
+          <Button type="submit" className="w-full">
             Se connecter
           </Button>
           <div className="flex items-center justify-between">
@@ -171,7 +168,7 @@ export default function LoginPage() {
                   search: searchParams.toString(),
                 }}
               >
-                S'enregistrer              
+                S'enregistrer
               </Link>
             </div>
           </div>
