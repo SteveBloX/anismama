@@ -87,7 +87,9 @@ export default function Index() {
       value: tag,
     }))
   );
-  const progressions = userMangas.filter((manga) => manga.progression);
+  const progressions = userMangas.filter(
+    (manga) => manga.progress && manga.progress !== "{}"
+  );
   const favoriteMangas = userMangas.filter((manga) => manga.isFavorited);
   const watchlist = userMangas.filter((manga) => manga.isWatchlisted);
 

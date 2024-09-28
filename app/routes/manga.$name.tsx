@@ -1,7 +1,7 @@
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { LoaderFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, ClockArrowUp, History, RotateCcw, Star } from "lucide-react";
 import { parse } from "node-html-parser";
 import { ToggleGroupItem } from "~/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
@@ -10,8 +10,8 @@ import { prisma } from "~/db.server";
 import { UserManga } from "@prisma/client";
 import { useState } from "react";
 import { Input } from "~/components/ui/input";
-import { normalizeString } from "~/utils";
-import { Collapsible, CollapsibleContent } from "~/components/ui/collapsible";
+import { normalizeString, submit } from "~/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
@@ -45,7 +45,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     userManga = await prisma.userManga.findFirst({
       where: {
         userId: user.id,
-        mangaId: paramsname,
+        mangaId: params.name
       },
     });
   }
@@ -63,30 +63,33 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     coverImg,
     alternateNames,
     userManga,
-    chaptersAount,
+    chaptersAmount
   };
 };
 
+enum Actions {
+  SetSettings = "setSettings"
+}
 const toggleGroupActions = [
   {
     value: "favorite",
     description: "Ajouter aux favoris",
-    icon: <Str />,
+    icon: <Star />
   },
   {
     value: "watchlist",
     description: "Ajouter à la liste de lecture",
-    icon: <ClockArrowp />,
+    icon: <ClockArrowUp />
   },
   {
     value: "history",
     description: "Historique de lecture",
-    icon: <Histoy />,
+    icon: <History />
   },
   {
     value: "restart",
     description: "Recommencer la lecture",
-    icon: <RotateCw />,
+    icon: <RotateCcw />
   },
 ];
 
@@ -112,6 +115,15 @@ export default function MangaDetails() {
   const timeFinished = data.userManga?.timesFinished;
   const progress = JSON.parse(data.userManga?.progress || "{}");
 
+  async function toggleGroupChange(valArray: string[]) {
+    if ((valArray.includes("favorite") && !isFavorite) || (!valArray.includes("favorite") && isFavorite) || (valArray.includes("watchlist") && !isWatchlist) || (!valArray.includes("watchlist") && isWatchlist))
+      const res = await submit(`/manga/${data.id}`, {
+        action: Actions.SetSettings,
+        id: data.id,
+        favor
+      }
+  }
+
   return (
     <div className="flex justify-center w-[100vw] mt-10">
       <div className="w-1/3 -ml-36">
@@ -125,10 +137,11 @@ export default function MangaDetails() {
               data.userManga
                 ? [
                   data.userManga.isFavorited ? "favorite" : "",
-                  data.userManga.isWatchlisted ? "watchlist" : ",
+                  data.userManga.isWatchlisted ? "watchlist" : ""
                 ]
                 : []
             }
+            onValueChange={toggleGroupChange}
           >
             <TooltipProvider>
               {toggleGroupActions.map((action) => (
