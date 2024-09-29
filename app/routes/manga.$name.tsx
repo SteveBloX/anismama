@@ -1,5 +1,5 @@
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
-import { LoaderFunction } from "@remix-run/node";
+import { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { ChevronsUpDown, ClockArrowUp, History, RotateCcw, Star } from "lucide-react";
 import { parse } from "node-html-parser";
@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/component
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
+import { ResponsiveDialog } from "~/components/reponsive-dialog";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -67,8 +68,54 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   };
 };
 
+export const action: ActionFunction = async ({request}) => {
+  const user = await getUser(request)
+  if (!user) {
+    return new Response(null, {status: 401})
+  }
+  const data = await request.formData()
+  const action = data.get("action") as Actions
+  const mangaId = data.get("id") as string
+  switch (action) {
+    case Actions.SetSettings:
+      const isFavorite = (data.get("isFavorite") as string) === "0" ? false : true
+      const isWatchlist = (data.get("isWatchlist") as string) === "0" ? false : true
+      const userManga = await prisma.userManga.findFirst({
+        where: {
+          userId: user.id,
+          mangaId
+        }
+      })
+      if (!userManga) {
+        await prisma.userManga.create({
+          data:{
+            userId: user.id,
+            mangaId,
+            isFavorited: isFavorite,
+            isWatchlisted: isWatchlist,
+          }
+        })
+        break;
+      }
+
+      await prisma.userManga.updateMany({
+        where: {
+          userId: user.id,
+          mangaId
+        },
+        data: {
+          isFavorited: isFavorite,
+          isWatchlisted: isWatchlist
+        }
+      })
+      break;
+  }
+  return null;
+}
+
 enum Actions {
-  SetSettings = "setSettings"
+  SetSettings = "setSettings",
+  ResetProgression = "resetProgression"
 }
 const toggleGroupActions = [
   {
@@ -93,6 +140,8 @@ const toggleGroupActions = [
   },
 ];
 
+
+
 export default function MangaDetails() {
   const data: {
     id: string;
@@ -110,47 +159,70 @@ export default function MangaDetails() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false);
   const isFinished = data.userManga?.finished;
   const timeFinished = data.userManga?.timesFinished;
   const progress = JSON.parse(data.userManga?.progress || "{}");
+  const [restartDialogOpen, setRestartDialogOpen] = useState(false)
+
+  const [toggleGroupValue, setToggleGroupValue] = useState( data.userManga
+    ? [
+      data.userManga.isFavorited ? "favorite" : "",
+      data.userManga.isWatchlisted ? "watchlist" : ""
+    ]
+    : [].filter(i=>i))
+  console.log(toggleGroupValue, data.userManga, isFavorite, isWatchlist)
 
   async function toggleGroupChange(valArray: string[]) {
-    if ((valArray.includes("favorite") && !isFavorite) || (!valArray.includes("favorite") && isFavorite) || (valArray.includes("watchlist") && !isWatchlist) || (!valArray.includes("watchlist") && isWatchlist))
+    const fav = valArray.includes("favorite")
+    const watchlist = valArray.includes("watchlist")
+    if ((valArray.includes("favorite") && !isFavorite) || (!valArray.includes("favorite") && isFavorite) || (valArray.includes("watchlist") && !isWatchlist) || (!valArray.includes("watchlist") && isWatchlist)) {
       const res = await submit(`/manga/${data.id}`, {
         action: Actions.SetSettings,
         id: data.id,
-        favor
+        isFavorite: fav ? "1" : "0",
+        isWatchlist: watchlist ? "1" : "0"
+      })
+      if (res.status === 200) {
+        setIsFavorite(fav)
+        setIsWatchlist(watchlist)
       }
+      else return;
+    }
+    if (valArray.includes("restart")) {
+      setRestartDialogOpen(true)
+    }
+    setToggleGroupValue([...(fav ? ["favorite"]: []), ...(watchlist ? ["watchlist"] : [])])
+  }
+  async function reset() {
+    const res = await submit(`/manga/${data.id}`, {
+      action: Actions.ResetProgression,
+      id: data.id
+    })
   }
 
   return (
     <div className="flex justify-center w-[100vw] mt-10">
-      <div className="w-1/3 -ml-36">
+      <div className="mx-3 lg:mx-0 w-full lg:w-1/2 3xl:w-1/3 -ml-36">
         <div className="flex gap-2">
-          <img src={data.coverImg} alt={data.title} className="rounded-lg" />
+          <img src={data.coverImg} alt={data.title} className="rounded-lg h-auto" />
           <ToggleGroup
             type="multiple"
             orientation="vertical"
             className="flex flex-col justify-between gap-1"
-            defaultValue={
-              data.userManga
-                ? [
-                  data.userManga.isFavorited ? "favorite" : "",
-                  data.userManga.isWatchlisted ? "watchlist" : ""
-                ]
-                : []
-            }
+           value={toggleGroupValue}
             onValueChange={toggleGroupChange}
           >
             <TooltipProvider>
               {toggleGroupActions.map((action) => (
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <ToggleGroupItem
                       key={action.value}
                       value={action.value}
                       className="p-8 h-full"
+                      style={{
+                        background: toggleGroupValue.includes(action.value) ? "#e8e8e8" : ""
+                      }}
                     >
                       {action.icon}
                     </ToggleGroupItem>
@@ -168,7 +240,7 @@ export default function MangaDetails() {
             <h1 className="text-4xl font-bold mt-4">{data.title}</h1>{" "}
             {data.alternateNames && data.alternateNames.length > 0 && (
               <CollapsibleTrigger>
-                <Button variant="ghost">
+                <Button variant="ghost" asChild>
                   <ChevronsUpDown />
                 </Button>
               </CollapsibleTrigger>
@@ -223,6 +295,9 @@ export default function MangaDetails() {
           </div>
         </div>
       </div>
+      <ResponsiveDialog danger description="" submitText="Recommencer" onSubmit={reset} title="Recommencer le manga" open={restartDialogOpen} setOpen={setRestartDialogOpen}>
+        Êtes-vous sur de vouloir recommencer ce manga à partir du début ?
+      </ResponsiveDialog>
     </div>
   );
 }
