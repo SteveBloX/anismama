@@ -49,6 +49,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (user) {
     userMangas = await prisma.userManga.findMany({
       where: { userId: user.id },
+      orderBy: {
+        updatedAt: "desc",
+      },
     });
   }
   return { scans, userMangas, loggedIn: !!user };

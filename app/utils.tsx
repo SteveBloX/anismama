@@ -1,14 +1,15 @@
+import { Simulate } from "react-dom/test-utils";
+import { useMatches } from "@remix-run/react";
+import { useMemo } from "react";
+
+import type { User } from "~/models/user.server";
+
 export function normalizeString(str: string) {
   return str
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 }
-
-import { useMatches } from "@remix-run/react";
-import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -106,4 +107,11 @@ export function submit(
     method: "POST",
     body: fData,
   });
+}
+
+export function getLastChapterData(progression: object | string) {
+  let progressData = progression;
+  if (typeof progressData === "string") {
+    progressData = JSON.parse(progressData);
+  }
 }

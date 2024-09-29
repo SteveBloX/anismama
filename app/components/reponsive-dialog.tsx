@@ -1,5 +1,5 @@
-import { useMediaQuery } from "~/hooks/use-media-query"
-import { Button } from "~/components/ui/button"
+import { useMediaQuery } from "~/hooks/use-media-query";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog"
+} from "~/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -17,40 +16,65 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
-} from "~/components/ui/drawer"
+} from "~/components/ui/drawer";
 import { DialogClose } from "@radix-ui/react-dialog";
 
-export function ResponsiveDialog({danger,title, description="", children, open, setOpen, submitText="Valider", onSubmit=()=>null}: {danger:boolean;submitText:string;onSubmit:(..._:any[])=>void;open:boolean;setOpen:(_:boolean)=>void;title: string;description: string;children: JSX.Element|string}) {
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+export function ResponsiveDialog({
+  danger = false,
+  title,
+  description = "",
+  children,
+  open,
+  setOpen,
+  submitText = "Valider",
+  onSubmit = () => null,
+  cancelButtonHidden = false,
+  onCancel = () => null,
+}: {
+  danger?: boolean;
+  submitText?: string;
+  onSubmit?: (..._: any[]) => void;
+  open: boolean;
+  setOpen: (_: boolean) => void;
+  title: string;
+  description?: string;
+  children: JSX.Element;
+  cancelButtonHidden?: boolean;
+  onCancel?: () => void;
+}) {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         {/*<DialogTrigger asChild>
-          <Button variant="outline">Edit Profile</Button>
+          <Button variant="outline">Edit Profile</Button> 
         </DialogTrigger>*/}
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
-            {description && (<DialogDescription>
-              {description}
-            </DialogDescription>)}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
           {children}
-          
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button>Annuler</Button>
-            </DialogClose>
-          <Button onClick={onSubmit} variant={danger ? "destructive" : "default"}>
-            {submitText}
-          </Button>
 
+          <DialogFooter>
+            {!cancelButtonHidden && (
+              <DialogClose asChild>
+                <Button onClick={onCancel}>Annuler</Button>
+              </DialogClose>
+            )}
+            <Button
+              onClick={onSubmit}
+              variant={danger ? "destructive" : "default"}
+            >
+              {submitText}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -61,19 +85,21 @@ export function ResponsiveDialog({danger,title, description="", children, open, 
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>{title}</DrawerTitle>
-          <DrawerDescription>
-            {description}
-          </DrawerDescription>
+          <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
         <div className="mx-4">{children}</div>
         <DrawerFooter className="pt-2">
-            <Button onClick={onSubmit} variant={danger ? "destructive" : "default"}>
-                {submitText}
-            </Button>
+          <Button
+            onClick={onSubmit}
+            variant={danger ? "destructive" : "default"}
+          >
+            {submitText}
+          </Button>
           <DrawerClose asChild>
             <Button variant="outline">Annuler</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )}
+  );
+}

@@ -40,7 +40,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     if (params.chapter === "latest") {
       const progress = JSON.parse(userManga.progress);
       const latestChapter = Object.keys(progress).sort((a, b) => b - a)[0];
-      return redirect(`/read/${params.name}/${latestChapter}`);
+      return redirect(`/read/${params.name}/${latestChapter || "1"}`);
     }
     isFavorited = userManga.isFavorited;
     isWatchlisted = userManga.isWatchlisted;
@@ -271,7 +271,7 @@ export default function Read() {
         action: Action.FinishManga,
       });
     }
-    navigate("/");
+    navigate(`/manga/${data.mangaName}`);
   }
 
   return (
