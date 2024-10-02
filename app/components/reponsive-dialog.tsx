@@ -88,7 +88,7 @@ export function ResponsiveDialog({
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
         <div className="mx-4">{children}</div>
-        <DrawerFooter className="pt-2">
+        <DrawerFooter className="pt-2 mt-2">
           <Button
             onClick={onSubmit}
             variant={danger ? "destructive" : "default"}

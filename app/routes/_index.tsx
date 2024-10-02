@@ -25,7 +25,7 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
-  console.log(user);
+  console.log("User: " + user ? user.username : "anyme");
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
   const text = await res.text();
   const root = parse(text);
@@ -58,7 +58,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   const readMangas = userMangas.map((manga) => {
     if (manga.timesFinished < 1) return null;
     const correspondingManga = scans.find((scan) => scan.id === manga.mangaId);
-    console.log(correspondingManga);
     if (!correspondingManga) return null;
     return {
       name: correspondingManga.title,
@@ -94,7 +93,7 @@ export default function Index() {
     scans,
     userMangas,
     loggedIn,
-    recommendedMana,
+    recommendedManga,
   }: {
     scans: Scan[];
     userMangas: UserManga[];

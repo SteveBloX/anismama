@@ -88,7 +88,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     alternateNames,
     userManga,
     chaptersAmount,
-    chaptersDetail,
+    chaptersDetails,
   };
 };
 
@@ -303,7 +303,7 @@ export default function MangaDetails() {
                       style={{
                         background: toggleGroupValue.includes(action.value)
                           ? "#e8e8e8"
-                          : ""
+                          : "",
                       }}
                       disabled={
                         action.isProgression &&
@@ -443,33 +443,40 @@ export default function MangaDetails() {
         }}
       >
         <div className="flex flex-col gap-1.5">
-          {Object.entries(newProgress).map((chapter) => {
-            const chapterNum = chapter[0];
-            const { currentPage, totalPage } = chapter[1];
-            return (
-              <div
-                key={chapterNum}
-                className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md"
-              >
-                <div className="flex flex-col">
-                  <span className="text-lg">Chapitre {chapterNum}</span>
-                  <span className="">Page {currentPage}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  className="h-full"
-                  onClick={() => {
-                    const prog = newProgress;
-                    delete prog[chapterNum];
-                    // spread the object so react rerenders the component
-                    setNewProgress({ ...prog });
-                  }}
+          {Object.entries(newProgress).length > 0 ? (
+            Object.entries(newProgress).map((chapter) => {
+              const chapterNum = chapter[0];
+              const { currentPage, totalPage } = chapter[1];
+              return (
+                <div
+                  key={chapterNum}
+                  className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md"
                 >
-                  <X className="text-red-500" />
-                </Button>
-              </div>
-            );
-          })}
+                  <div className="flex flex-col">
+                    <span className="text-lg">Chapitre {chapterNum}</span>
+                    <span className="">Page {currentPage}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="h-full"
+                    onClick={() => {
+                      const prog = newProgress;
+                      delete prog[chapterNum];
+                      // spread the object so react rerenders the component
+                      setNewProgress({ ...prog });
+                    }}
+                  >
+                    <X className="text-red-500" />
+                  </Button>
+                </div>
+              );
+            })
+          ) : (
+            <p
+              className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md text-gray-600">
+              Vide
+            </p>
+          )}
         </div>
       </ResponsiveDialog>
       <ResponsiveDialog
