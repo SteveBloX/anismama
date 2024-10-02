@@ -1,9 +1,9 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { Link, useSearchParams } from "@remix-run/react";
 import { parse } from "node-html-parser";
 import { useLoaderData } from "react-router";
 import { Input } from "~/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { normalizeString } from "~/utils";
 import { MultiSelect } from "~/components/multi-select";
 import { prisma } from "~/db.server";
@@ -17,6 +17,7 @@ import {
 } from "~/components/ui/carousel";
 import { Button } from "~/components/ui/button";
 import { UserManga } from "@prisma/client";
+import { RecommendationManga, recommendMangas } from "~/recommendation";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Anismama" }, { name: "description", content: "Anismama!" }];
@@ -54,7 +55,30 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     });
   }
-  return { scans, userMangas, loggedIn: !!user };
+  const readMangas = userMangas.map((manga) => {
+    if (manga.timesFinished < 1) return null;
+    const correspondingManga = scans.find((scan) => scan.id === manga.mangaId);
+    console.log(correspondingManga);
+    if (!correspondingManga) return null;
+    return {
+      name: correspondingManga.title,
+      tags: correspondingManga.tags.map((tag) => tag.toLowerCase()),
+      isFavorite: manga.isFavorited,
+      timesRead: manga.timesFinished,
+      id: manga.mangaId,
+    };
+  });
+  const recommendedManga = recommendMangas(
+    readMangas.filter((manga) => !!manga),
+    scans.map((scan) => {
+      return {
+        name: scan.title,
+        tags: scan.tags.map((tag) => tag.toLowerCase()),
+        id: scan.id,
+      };
+    })
+  );
+  return { scans, userMangas, loggedIn: !!user, recommendedManga };
 };
 type Scan = {
   title: string;
@@ -70,19 +94,23 @@ export default function Index() {
     scans,
     userMangas,
     loggedIn,
+    recommendedMana,
   }: {
     scans: Scan[];
     userMangas: UserManga[];
     loggedIn: boolean;
+    recommendedManga: RecommendationManga[];
   } = useLoaderData() as any;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const filteredScans = scans.filter(
     (scan) =>
       (normalizeString(scan.title).includes(normalizeString(searchTerm)) ||
         normalizeString(scan.alias).includes(normalizeString(searchTerm))) &&
       (selectedTags.length === 0 ||
-        selectedTags.every((tag) => scan.tags.includes(tag)))
+        selectedTags.every((tag) =>
+          scan.tags.map((tag) => tag.toLowerCase()).includes(tag.toLowerCase())
+        ))
   );
   const [tagsList] = useState(
     [...new Set(scans.map((scan) => scan.tags).flat())].map((tag) => ({
@@ -95,7 +123,13 @@ export default function Index() {
   );
   const favoriteMangas = userMangas.filter((manga) => manga.isFavorited);
   const watchlist = userMangas.filter((manga) => manga.isWatchlisted);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const tags = searchParams.get("tags");
+    if (!tags) return;
+    setSelectedTags(tags.split("+"));
+  }, []);
+  //console.log(selectedTags);
   return (
     <div className="p-5">
       <div className="w-full flex justify-end">
@@ -139,7 +173,7 @@ export default function Index() {
                   }%`;
                   const lastChapterNum = parseInt(lastChapter);
                   return (
-                    <CarouselItem className="lg:basis-1/3">
+                    <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                       <Link
                         className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
                         to={`/read/${manga.mangaId}/${lastChapterNum}`}
@@ -196,7 +230,7 @@ export default function Index() {
             <Carousel className="">
               <CarouselContent className="mb-5">
                 {favoriteMangas.map((manga) => (
-                  <CarouselItem className="lg:basis-1/3">
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                     <Link
                       className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
                       to={`/manga/${manga.mangaId}`}
@@ -237,7 +271,7 @@ export default function Index() {
             <Carousel className="">
               <CarouselContent className="mb-5">
                 {watchlist.map((manga) => (
-                  <CarouselItem className="lg:basis-1/3">
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                     <Link
                       className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
                       to={`/manga/${manga.mangaId}`}
@@ -271,8 +305,46 @@ export default function Index() {
           </div>
         )}
       </div>
+      <div className="justify-center flex">
+        {recommendedManga.length > 0 && (
+          <div className="mb-5 w-2/3">
+            <h1 className="text-3xl font-bold mb-3 flex items-center justify-center gap-3">
+              Recommandations{" "}
+              <span className="py-1 px-2 bg-green-200 text-sm rounded-md mt-0.5">
+                BETA
+              </span>
+            </h1>
+            <Carousel className="">
+              <CarouselContent className="mb-5">
+                {recommendedManga.slice(0, 15).map((manga, i) => (
+                  <CarouselItem className={`md:basis-1/2 lg:basis-1/3`}>
+                    <Link
+                      className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
+                      to={`/manga/${manga.id}`}
+                    >
+                      <div>
+                        <img
+                          src={scans.find((scan) => scan.id === manga.id)?.img}
+                          alt={manga.name}
+                          className="rounded-lg"
+                        />
+
+                        <h1 className="mt-2">{manga.name}</h1>
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselNext />
+              <CarouselPrevious />
+            </Carousel>
+          </div>
+        )}
+      </div>
       <div>
-        <h1 className="text-3xl font-bold text-center mb-3">Recherche</h1>
+        <h1 className="text-3xl font-bold text-center mb-3" id="search">
+          Recherche
+        </h1>
         <div className="flex justify-center w-full">
           <div className="flex justify-center flex-col lg:flex-row mb-3 lg:mb-5 gap-1 lg:w-1/2">
             <Input
@@ -284,6 +356,7 @@ export default function Index() {
             <MultiSelect
               options={tagsList}
               onValueChange={setSelectedTags}
+              defaultValue={selectedTags}
               value={selectedTags}
               placeholder="Genre"
               className="lg:w-1/3 shadow-none lg:shadow-lg"

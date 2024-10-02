@@ -7,7 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { ArrowLeft, ArrowRight, ClockArrowUp, Home, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ClockArrowUp,
+  Eye,
+  Home,
+  Settings,
+  Star,
+} from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { getUser } from "~/session.server";
 import { prisma } from "~/db.server";
@@ -16,6 +24,9 @@ import { useEffect, useState } from "react";
 import useDebounce from "~/hooks/useDebounce";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { ResponsiveDialog } from "~/components/reponsive-dialog";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Slider } from "~/components/ui/slider";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -195,11 +206,22 @@ export default function Read() {
   } = useLoaderData();
   const navigate = useNavigate();
   const { revalidate } = useRevalidator();
+  const [options, setOptions] = useState([
+    ...(data.isFavorited ? ["favorite"] : []),
+    ...(data.isWatchlisted ? ["watchlist"] : []),
+  ]);
 
   async function toggleOption(options: string[]) {
+    const excluded = ["settings", "home", "details"];
     if (options.includes("home")) {
       navigate("/");
       return;
+    }
+    if (options.includes("settings")) {
+      setSettingsDialogOpen(true);
+    }
+    if (options.includes("details")) {
+      navigate(`/manga/${data.mangaName}`);
     }
     const res = await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
       action: Action.SetOptions,
@@ -211,6 +233,7 @@ export default function Read() {
     if (res.ok) {
       revalidate();
     }
+    setOptions(options.filter((option) => !excluded.includes(option)));
   }
 
   async function saveProgress(elId: string) {
@@ -274,6 +297,39 @@ export default function Read() {
     navigate(`/manga/${data.mangaName}`);
   }
 
+  const [invertedControls, setInvertedControls] = useState(false);
+  const [marginBottom, setMarginBottom] = useState(0);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  useEffect(() => {
+    const dataJson = localStorage.getItem("settings");
+    if (!dataJson || dataJson === "") return;
+    const data = JSON.parse(dataJson);
+    setSettingsSaved(true);
+    if (data.marginBottom) setMarginBottom(data.marginBottom);
+    if (data.invertedControls) setInvertedControls(data.invertedControls);
+  }, []);
+
+  function updateLocalStorage({
+    newMarginBottom = marginBottom,
+    newInvertedControls = invertedControls,
+    newSettingsSaved = settingsSaved,
+  }: {
+    newMarginBottom?: number;
+    newInvertedControls?: boolean;
+    newSettingsSaved?: boolean;
+  }) {
+    if (!newSettingsSaved) {
+      localStorage.setItem("settings", "");
+      return;
+    }
+    const newSettings = {
+      marginBottom: newMarginBottom,
+      invertedControls: newInvertedControls,
+    };
+    localStorage.setItem("settings", JSON.stringify(newSettings));
+  }
+
   return (
     <div className="flex flex-col justify-center">
       <div className="lg:fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 lg:rounded-md lg:-blur-3xl p-1 flex flex-col gap-1 mb-5">
@@ -281,10 +337,7 @@ export default function Read() {
           onValueChange={toggleOption}
           variant="default"
           type="multiple"
-          defaultValue={[
-            ...(data.isFavorited ? ["favorite"] : []),
-            ...(data.isWatchlisted ? ["watchlist"] : []),
-          ]}
+          value={options}
         >
           <ToggleGroupItem value="home">
             <Home />
@@ -299,6 +352,12 @@ export default function Read() {
               </ToggleGroupItem>
             </>
           )}
+          <ToggleGroupItem value="details">
+            <Eye />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="settings">
+            <Settings />
+          </ToggleGroupItem>
         </ToggleGroup>
         <Separator />
         <ToggleGroup
@@ -362,8 +421,17 @@ export default function Read() {
             ))}
         </div>
       </div>
-      <div className="justify-center flex">
-        <div className="flex gap-2 justify-center my-4 w-full lg:w-1/2 mx-3 lg:mx-0">
+      <div
+        className="justify-center flex"
+        style={{
+          marginBottom: marginBottom + "%",
+        }}
+      >
+        <div
+          className={`flex ${
+            invertedControls ? "flex-row-reverse" : "flex-row"
+          } gap-2 justify-center my-4 w-full lg:w-1/2 mx-3 lg:mx-0`}
+        >
           {parseInt(data.chapterNumber) < data.chaptersAmount ? (
             <>
               <Button
@@ -404,6 +472,60 @@ export default function Read() {
           )}
         </div>
       </div>
+      <ResponsiveDialog
+        open={settingsDialogOpen}
+        setOpen={setSettingsDialogOpen}
+        title="Paramètres"
+        cancelButtonHidden
+        submitText="Fermer"
+        onSubmit={() => setSettingsDialogOpen(false)}
+      >
+        <div className="flex flex-col gap-3.5">
+          <div className="flex gap-4 items-center">
+            <Checkbox
+              checked={invertedControls}
+              id="invertedControls"
+              onCheckedChange={(checked) => {
+                setInvertedControls(!!checked);
+                updateLocalStorage({ newInvertedControls: !!checked });
+              }}
+            />
+            <label htmlFor="invertedControls" className="text-gray-900">
+              Inverser les boutons en bas de pages
+            </label>
+          </div>
+          <Separator />
+          <div className="flex flex-col-reverse gap-3">
+            <div className="flex gap-4 items-center justify-between">
+              <Slider
+                value={[marginBottom]}
+                max={50}
+                step={1}
+                onValueChange={(vals) => {
+                  setMarginBottom(vals[0]);
+                  updateLocalStorage({ newMarginBottom: vals[0] });
+                }}
+              />
+              <span>{marginBottom}%</span>{" "}
+            </div>
+            <label>Espace en bas de page (pour une main)</label>
+          </div>
+          <Separator />
+          <div className="flex gap-4 items-center">
+            <Checkbox
+              checked={settingsSaved}
+              id="settingsSaved"
+              onCheckedChange={(checked) => {
+                setSettingsSaved(!!checked);
+                updateLocalStorage({ newSettingsSaved: !!checked });
+              }}
+            />
+            <label htmlFor="settingsSaved" className="text-gray-900">
+              Enregistrer sur l'appareil
+            </label>
+          </div>
+        </div>
+      </ResponsiveDialog>
     </div>
   );
 }

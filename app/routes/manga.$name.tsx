@@ -17,6 +17,7 @@ import { Badge } from "~/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext } from "~/components/ui/carousel";
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { useRevalidator } from "react-router";
+import { useMediaQuery } from "~/hooks/use-media-query";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -57,6 +58,27 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const chaptersText = await chaptersRes.text();
   const chapters = chaptersText.match(/eps[0-9]+=/gm);
   const chaptersAmount = chapters?.length;
+  const chaptersDetails = chapters?.map((ch, i) => {
+    const num = i + 1;
+    let pagesAmount;
+    try {
+      pagesAmount =
+        chaptersText.split(`var eps${num}= [`)[1].split("];")[0].split(",")
+          .length - 1;
+    } catch (e) {
+      try {
+        pagesAmount = parseInt(
+          chaptersText.split(`eps${num}.length = `)[1].split(";")[0]
+        );
+      } catch (e) {
+        console.log(num);
+      }
+    }
+    return {
+      number: num,
+      pagesAmount,
+    };
+  });
   return {
     id: params.name,
     synopsis,
@@ -65,7 +87,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     coverImg,
     alternateNames,
     userManga,
-    chaptersAmoun,
+    chaptersAmount,
+    chaptersDetail,
   };
 };
 
@@ -79,10 +102,8 @@ export const action: ActionFunction = async ({ request }) => {
   const mangaId = data.get("id") as string;
   switch (action) {
     case Actions.SetSettings:
-      const isFavorite =
-        (data.get("isFavorite") as string) === "0" ? false : true;
-      const isWatchlist =
-        (data.get("isWatchlist") as string) === "0" ? false : true;
+      const isFavorite = (data.get("isFavorite") as string) !== "0";
+      const isWatchlist = (data.get("isWatchlist") as string) !== "0";
       const userManga = await prisma.userManga.findFirst({
         where: {
           userId: user.id,
@@ -100,7 +121,6 @@ export const action: ActionFunction = async ({ request }) => {
         });
         break;
       }
-
       await prisma.userManga.updateMany({
         where: {
           userId: user.id,
@@ -108,7 +128,7 @@ export const action: ActionFunction = async ({ request }) => {
         },
         data: {
           isFavorited: isFavorite,
-          isWatchlisted: isWatchlis,
+          isWatchlisted: isWatchlist,
         },
       });
       break;
@@ -159,11 +179,13 @@ const toggleGroupActions = [
     value: "history",
     description: "Historique de lecture",
     icon: <History />,
+    isProgression: true,
   },
   {
     value: "restart",
     description: "Recommencer la lecture",
     icon: <RotateCcw />,
+    isProgression: true,
   },
 ];
 
@@ -177,17 +199,26 @@ export default function MangaDetails() {
     alternateNames: string[];
     userManga: UserManga;
     chaptersAmount: number;
+    chaptersDetails: {
+      number: number;
+      pagesAmount: number;
+    }[];
   } = useLoaderData();
   const revalidator = useRevalidator();
   const [chaptersSearch, setChaptersSearch] = useState("");
   const [altTitlesOpen, setAltTitlesOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isWatchlist, setIsWatchlist] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(
+    data.userManga && data.userManga.isFavorited
+  );
+  const [isWatchlist, setIsWatchlist] = useState(
+    data.userManga && data.userManga.isWatchlisted
+  );
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const isFinished = data.userManga?.finished;
-  const timeFinished = data.userManga?.timesFinished;
+  const timesFinished = data.userManga?.timesFinished;
   const progress = JSON.parse(data.userManga?.progress || "{}");
   const [restartDialogOpen, setRestartDialogOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 640px)");
 
   const [toggleGroupValue, setToggleGroupValue] = useState(
     data.userManga
@@ -197,8 +228,6 @@ export default function MangaDetails() {
       ]
       : [].filter((i) => i)
   );
-  console.log(toggleGroupValue, data.userManga, isFavorite, isWatchlist);
-
   async function toggleGroupChange(valArray: string[]) {
     const fav = valArray.includes("favorite");
     const watchlist = valArray.includes("watchlist");
@@ -251,131 +280,155 @@ export default function MangaDetails() {
     });
     setIsHistoryOpen(false);
   }
-
   return (
     <div className="flex justify-center w-[100vw] mt-10">
-      <div className="mx-3 lg:mx-0 w-full lg:w-1/2 3xl:w-1/3 -ml-36">
-        <div className="flex gap-2">
-          <img
-            src={data.coverImg}
-            alt={data.title}
-            className="rounded-lg h-auto"
-          />
-          {data.userManga && (
-            <ToggleGroup
-              type="multiple"
-              orientation="vertical"
-              className="flex flex-col justify-between gap-1"
-              value={toggleGroupValue}
-              onValueChange={toggleGroupChange}
-            >
-              <TooltipProvider>
-                {toggleGroupActions.map((action) => (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem
-                        key={action.value}
-                        value={action.value}
-                        className="p-8 h-full"
-                        style={{
-                          background: toggleGroupValue.includes(action.value)
-                            ? "#e8e8e8"
-                            : ""
-                        }}
-                      >
-                        {action.icon}
-                      </ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="p-2">
-                      {action.description}
-                    </TooltipContent>
-                  </Tooltip>
+      <div className="w-full lg:w-1/2 3xl:w-1/3 lg:-ml-36">
+        <div className="flex gap-2 flex-col lg:flex-row mx-4 lg:mx-0">
+          <img src={data.coverImg} alt={data.title} className="rounded-lg" />
+          <ToggleGroup
+            type="multiple"
+            orientation={isMobile ? "horizontal" : "vertical"}
+            className="flex justify-center lg:flex-col lg:justify-between gap-1"
+            value={toggleGroupValue}
+            onValueChange={toggleGroupChange}
+          >
+            <TooltipProvider>
+              {toggleGroupActions.map((action) => (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem
+                      key={action.value}
+                      value={action.value}
+                      className="p-8 w-full lg:w-unset  lg:p-8 lg:h-full"
+                      style={{
+                        background: toggleGroupValue.includes(action.value)
+                          ? "#e8e8e8"
+                          : ""
+                      }}
+                      disabled={
+                        action.isProgression &&
+                        !(data.userManga && data.userManga.progress !== "{}")
+                      }
+                    >
+                      {action.icon}
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="p-2">
+                    {action.description}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          </ToggleGroup>
+        </div>
+        <div className="flex flex-col-reverse lg:flex-col">
+          <Collapsible
+            open={altTitlesOpen}
+            onOpenChange={setAltTitlesOpen}
+            className="mx-4 lg:mx-0 lg:mt-4"
+          >
+            <div className="flex gap-2 mb-4">
+              <h1 className="text-4xl font-bold">{data.title}</h1>{" "}
+              {data.alternateNames && data.alternateNames.length > 0 && (
+                <CollapsibleTrigger>
+                  <Button variant="ghost" asChild>
+                    <ChevronsUpDown />
+                  </Button>
+                </CollapsibleTrigger>
+              )}
+            </div>
+            <CollapsibleContent>
+              <h4 className="text-lg font-bold mt-2">Autres titres</h4>
+              <ul>
+                {data.alternateNames.map((name) => (
+                  <li key={name}>{name}</li>
                 ))}
-              </TooltipProvider>
-            </ToggleGroup>
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+          {data.userManga && (
+            <div className="mt-2 flex flex-col lg:flex-row lg:-mt-1 mb-3 gap-2 mx-4 lg:mx-0">
+              {data.userManga.finished && (
+                <Button onClick={() => setRestartDialogOpen(true)}>
+                  Recommencer le manga
+                </Button>
+              )}
+              {data.userManga.progress !== "{}" ? (
+                <Link to={`/read/${data.id}/latest`}>
+                  <Button variant="outline" className="w-full lg:w-unset">
+                    Reprendre la lecture
+                  </Button>
+                </Link>
+              ) : (
+                <Link to={`/read/${data.id}/1`}>
+                  <Button>Commencer la lecture</Button>
+                </Link>
+              )}
+            </div>
           )}
         </div>
-        <Collapsible open={altTitlesOpen} onOpenChange={setAltTitlesOpen}>
-          <div className="flex gap-2 mb-4">
-            <h1 className="text-4xl font-bold mt-4">{data.title}</h1>{" "}
-            {data.alternateNames && data.alternateNames.length > 0 && (
-              <CollapsibleTrigger>
-                <Button variant="ghost" asChild>
-                  <ChevronsUpDown />
-                </Button>
-              </CollapsibleTrigger>
-            )}
-          </div>
-          <CollapsibleContent>
-            <h4 className="text-lg font-bold mt-2">Autres titres</h4>
-            <ul>
-              {data.alternateNames.map((name) => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          </CollapsibleContent>
-        </Collapsible>
-        {data.userManga && (
-          <div className="flex -mt-1 mb-3 gap-2">
-            {data.userManga.finished && (
-              <Button onClick={() => setRestartDialogOpen(true)}>
-                Recommencer le manga
-              </Button>
-            )}
-            {data.userManga.progress !== "{}" ? (
-              <Link to={`/read/${data.id}/latest`}>
-                <Button variant="outline">Reprendre la lecture</Button>
-              </Link>
-            ) : (
-              <Link to={`/read/${data.id}/1`}>
-                <Button>Commencer la lecture</Button>
-              </Link>
-            )}
-          </div>
-        )}
 
-        <h3 className="text-lg font-bold">Résumé</h3>
-        <p className="mt-1">{data.synopsis}</p>
-        {data.userManga && data.userManga.timesFinished > 0 && (
-          <span className="italic text-gray-400">
-            Lu {data.userManga.timesFinished} fois
-          </span>
-        )}
+        <div className="mx-4 lg:mx-0">
+          <h3 className="text-lg font-bold">Résumé</h3>
+          <p className="mt-1">{data.synopsis}</p>
+          {data.userManga && timesFinished > 0 && (
+            <span className="italic text-gray-400 mt-1">
+              Lu {timesFinished} fois
+            </span>
+          )}
+        </div>
         {data.tags.length > 0 && (
-          <Carousel className="mt-3 select-none">
+          <Carousel className="mt-3 select-none mx-4 lg:mx-0">
             <CarouselContent className="">
               {data.tags.map((tag) => (
                 <CarouselItem className="basis-1/8">
-                  <Badge variant="outline">{tag}</Badge>
+                  <Link to={`/?tags=${tag}#search`}>
+                    <Badge variant="outline">{tag}</Badge>
+                  </Link>
                 </CarouselItem>
               ))}
             </CarouselContent>
             <CarouselPrevious /> <CarouselNext />
           </Carousel>
         )}
-        <div className="w-full border border-gray-100 rounded-lg p-2 mt-5">
+        <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
           <Input
             value={chaptersSearch}
             onChange={(e) => setChaptersSearch(e.target.value)}
             placeholder="Rechercher un chapitre..."
             className="shadow-none border-gray-100"
           />
-          <div className="grid grid-cols-4 gap-x-1 gap-y-1 mt-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 mt-2">
             {Array(data.chaptersAmount)
               .fill(0)
-              .map((_, i) => `Chapitre ${i + 1}`)
-              .filter((t) =>
-                normalizeString(t).includes(normalizeString(chaptersSearch))
+              .filter((_, i) =>
+                normalizeString(`Chapitre ${i + 1}`).includes(
+                  normalizeString(chaptersSearch)
+                )
               )
-              .map((t) => (
-                <Link
-                  to={`/read/${data.id}/${t.split("Chapitre ")[1]}`}
-                  key={t}
-                  className="p-2 border border-gray-100 rounded-md"
-                >
-                  {t}
-                </Link>
-              ))}
+              .map((_, t) => {
+                const details = data.chaptersDetails.find(
+                  (chap) => chap.number === t + 1
+                );
+                let pagesAmount;
+                if (details) {
+                  pagesAmount = details.pagesAmount;
+                }
+                return (
+                  <Link
+                    to={`/read/${data.id}/${t + 1}`}
+                    key={t + 1}
+                    className="p-2 border border-gray-100 rounded-md flex flex-col"
+                  >
+                    <span>Chapitre {t + 1}</span>
+                    {pagesAmount && (
+                      <span className="text-sm text-gray-600">
+                        {pagesAmount} page{pagesAmount !== 1 && "s"}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
           </div>
         </div>
       </div>
@@ -393,7 +446,6 @@ export default function MangaDetails() {
           {Object.entries(newProgress).map((chapter) => {
             const chapterNum = chapter[0];
             const { currentPage, totalPage } = chapter[1];
-            console.log(chapterNum);
             return (
               <div
                 key={chapterNum}
@@ -408,9 +460,7 @@ export default function MangaDetails() {
                   className="h-full"
                   onClick={() => {
                     const prog = newProgress;
-                    console.log(prog);
                     delete prog[chapterNum];
-                    console.log(prog);
                     // spread the object so react rerenders the component
                     setNewProgress({ ...prog });
                   }}
