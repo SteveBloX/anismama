@@ -96,7 +96,8 @@ export function submit(
   action: string,
   data: {
     [key: string]: any;
-  }
+  },
+  keepAlive: boolean = false
 ) {
   const fData = new FormData();
   for (const [key, value] of Object.entries(data)) {
@@ -106,12 +107,6 @@ export function submit(
   return fetch(action, {
     method: "POST",
     body: fData,
+    keepalive: keepAlive,
   });
-}
-
-export function getLastChapterData(progression: object | string) {
-  let progressData = progression;
-  if (typeof progressData === "string") {
-    progressData = JSON.parse(progressData);
-  }
 }

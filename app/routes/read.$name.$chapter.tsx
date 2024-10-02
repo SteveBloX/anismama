@@ -236,15 +236,19 @@ export default function Read() {
     setOptions(options.filter((option) => !excluded.includes(option)));
   }
 
-  async function saveProgress(elId: string) {
+  async function saveProgress(elId: string, keepAlive: boolean = false) {
     if (!elId || !elId.includes("page-")) return;
     const page = parseInt(elId.split("-")[1]);
     const totalPages = data.pagesAmount;
     const chapter = parseInt(data.chapterNumber);
-    await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
-      action: Action.SetProgress,
-      progress: JSON.stringify({ page, totalPages, chapter }),
-    });
+    await submit(
+      `/read/${data.mangaName}/${data.chapterNumber}`,
+      {
+        action: Action.SetProgress,
+        progress: JSON.stringify({ page, totalPages, chapter }),
+      },
+      keepAlive
+    );
   }
 
   const [centerElement, setCenterElement] = useState(null);
@@ -268,14 +272,24 @@ export default function Read() {
     // Detect on load
     detectCenterElement();
 
+    function saveBeforeExit() {
+      const element = document.elementsFromPoint(
+        window.innerWidth / 2,
+        window.innerHeight / 2
+      )[0];
+      saveProgress(element.id, true);
+    }
+
     // Event listeners for scroll and resize
     window.addEventListener("scroll", detectCenterElement);
     window.addEventListener("resize", detectCenterElement);
+    window.addEventListener("beforeunload", saveBeforeExit);
 
     // Cleanup function
     return () => {
       window.removeEventListener("scroll", detectCenterElement);
       window.removeEventListener("resize", detectCenterElement);
+      window.removeEventListener("beforeunload", saveBeforeExit);
     };
   }, []); // Empty dependency array ensures the effect runs only once after the initial render
   useEffect(() => {
@@ -329,6 +343,14 @@ export default function Read() {
     };
     localStorage.setItem("settings", JSON.stringify(newSettings));
   }
+
+  useEffect(() => {
+    if (window) {
+      window.addEventListener("beforeunload", (e) => {
+        submit(`/read/${data.mangaName}/${data.chapterNumber}`, {});
+      });
+    }
+  }, []);
 
   return (
     <div className="flex flex-col justify-center">
