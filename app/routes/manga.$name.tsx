@@ -1,20 +1,42 @@
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { ChevronsUpDown, ClockArrowUp, History, RotateCcw, Star, X } from "lucide-react";
+import {
+  ChevronsUpDown,
+  ClockArrowUp,
+  History,
+  RotateCcw,
+  Star,
+  X,
+} from "lucide-react";
 import { parse } from "node-html-parser";
 import { ToggleGroupItem } from "~/components/ui/toggle-group";
-import { Tooltip, TooltipContent, TooltipProvider } from "~/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { getUser } from "~/session.server";
 import { prisma } from "~/db.server";
 import { UserManga } from "@prisma/client";
 import { useState } from "react";
 import { Input } from "~/components/ui/input";
 import { normalizeString, submit } from "~/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext } from "~/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "~/components/ui/carousel";
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { useRevalidator } from "react-router";
 import { useMediaQuery } from "~/hooks/use-media-query";
@@ -223,9 +245,9 @@ export default function MangaDetails() {
   const [toggleGroupValue, setToggleGroupValue] = useState(
     data.userManga
       ? [
-        data.userManga.isFavorited ? "favorite" : "",
-        data.userManga.isWatchlisted ? "watchlist" : ",
-      ]
+          data.userManga.isFavorited ? "favorite" : "",
+          data.userManga.isWatchlisted ? "watchlist" : "",
+        ]
       : [].filter((i) => i)
   );
   async function toggleGroupChange(valArray: string[]) {
@@ -241,7 +263,7 @@ export default function MangaDetails() {
         action: Actions.SetSettings,
         id: data.id,
         isFavorite: fav ? "1" : "0",
-        isWatchlist: watchlist ? "1" : "0"
+        isWatchlist: watchlist ? "1" : "0",
       });
       if (res.status === 200) {
         setIsFavorite(fav);
@@ -256,13 +278,13 @@ export default function MangaDetails() {
     }
     setToggleGroupValue([
       ...(fav ? ["favorite"] : []),
-      ...(watchlist ? ["watchlist"] : [])
+      ...(watchlist ? ["watchlist"] : []),
     ]);
   }
   async function reset() {
     const res = await submit(`/manga/${data.id}`, {
       action: Actions.ResetProgression,
-      id: data.id
+      id: data.id,
     });
     if (res.status === 200) {
       setRestartDialogOpen(false);
@@ -276,7 +298,7 @@ export default function MangaDetails() {
     await submit(`/manga/${data.id}`, {
       action: Actions.EditHistory,
       progress: JSON.stringify(newProgress),
-      id: data.id
+      id: data.id,
     });
     setIsHistoryOpen(false);
   }
@@ -472,8 +494,7 @@ export default function MangaDetails() {
               );
             })
           ) : (
-            <p
-              className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md text-gray-600">
+            <p className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md text-gray-600">
               Vide
             </p>
           )}
