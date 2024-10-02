@@ -173,7 +173,7 @@ const toggleGroupActions = [
   {
     value: "watchlist",
     description: "Ajouter à la liste de lecture",
-    icon: <ClockArrowUp /,
+    icon: <ClockArrowUp />,
   },
   {
     value: "history",
@@ -224,7 +224,7 @@ export default function MangaDetails() {
     data.userManga
       ? [
         data.userManga.isFavorited ? "favorite" : "",
-        data.userManga.isWatchlisted ? "watchlist" : ""
+        data.userManga.isWatchlisted ? "watchlist" : ",
       ]
       : [].filter((i) => i)
   );
