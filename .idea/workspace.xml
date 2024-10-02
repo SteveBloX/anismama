@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/utils.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +86,7 @@
       <workItem from="1727528507932" duration="1505000" />
       <workItem from="1727531211574" duration="3070000" />
       <workItem from="1727627563581" duration="22693000" />
-      <workItem from="1727881717531" duration="7247000" />
+      <workItem from="1727881717531" duration="7740000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />

@@ -25,7 +25,7 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
-  console.log("User: " + user ? user.username : "anyme");
+  console.log("User: " + user ? user?.username : "anyme");
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
   const text = await res.text();
   const root = parse(text);
@@ -305,7 +305,7 @@ export default function Index() {
         )}
       </div>
       <div className="justify-center flex">
-        {recommendedManga.length > 0 && (
+        {loggedIn && recommendedManga.length > 0 && (
           <div className="mb-5 w-2/3">
             <h1 className="text-3xl font-bold mb-3 flex items-center justify-center gap-3">
               Recommandations{" "}
