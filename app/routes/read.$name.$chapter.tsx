@@ -12,7 +12,10 @@ import {
   ArrowRight,
   ClockArrowUp,
   Eye,
+  EyeOff,
   Home,
+  PanelLeft,
+  PanelRight,
   Settings,
   Star,
 } from "lucide-react";
@@ -192,6 +195,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   return new Response(null, { status: 200 });
 };
 
+enum FloaterSide {
+  Left = "LEFT",
+  Right = "RIGHT",
+  Hidden = "HIDDEN",
+}
+
 export default function Read() {
   const data: {
     chaptersAmount: number;
@@ -315,6 +324,7 @@ export default function Read() {
   const [marginBottom, setMarginBottom] = useState(0);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [floaterSide, setFloaterSide] = useState<FloaterSide>(FloaterSide.Left);
   useEffect(() => {
     const dataJson = localStorage.getItem("settings");
     if (!dataJson || dataJson === "") return;
@@ -322,16 +332,19 @@ export default function Read() {
     setSettingsSaved(true);
     if (data.marginBottom) setMarginBottom(data.marginBottom);
     if (data.invertedControls) setInvertedControls(data.invertedControls);
+    if (data.floaterSide) setFloaterSide(data.floaterSide);
   }, []);
 
   function updateLocalStorage({
     newMarginBottom = marginBottom,
     newInvertedControls = invertedControls,
     newSettingsSaved = settingsSaved,
+    newFloaterSide = floaterSide,
   }: {
     newMarginBottom?: number;
     newInvertedControls?: boolean;
     newSettingsSaved?: boolean;
+    newFloaterSide: FloaterSide;
   }) {
     if (!newSettingsSaved) {
       localStorage.setItem("settings", "");
@@ -340,6 +353,7 @@ export default function Read() {
     const newSettings = {
       marginBottom: newMarginBottom,
       invertedControls: newInvertedControls,
+      floaterSide: newFloaterSide,
     };
     localStorage.setItem("settings", JSON.stringify(newSettings));
   }
@@ -354,7 +368,15 @@ export default function Read() {
 
   return (
     <div className="flex flex-col justify-center">
-      <div className="lg:fixed lg:top-2 lg:left-3 top-0 left-0 w-[100vw] lg:w-[unset] border border-gray-200 lg:rounded-md lg:-blur-3xl p-1 flex flex-col gap-1 mb-5">
+      <div
+        className={`lg:fixed top-0 left-0 lg:top-2 ${
+          floaterSide !== FloaterSide.Right
+            ? " lg:left-3"
+            : "lg:right-3 w-[400px]"
+        }${
+          floaterSide === FloaterSide.Hidden ? " lg:hidden" : ""
+        } border border-gray-200 lg:rounded-md lg:backdrop-blur-3xl p-1 flex flex-col gap-1 mb-5`}
+      >
         <ToggleGroup
           onValueChange={toggleOption}
           variant="default"
@@ -521,7 +543,7 @@ export default function Read() {
             <div className="flex gap-4 items-center justify-between">
               <Slider
                 value={[marginBottom]}
-                max={50}
+                max={100}
                 step={1}
                 onValueChange={(vals) => {
                   setMarginBottom(vals[0]);
@@ -531,6 +553,26 @@ export default function Read() {
               <span>{marginBottom}%</span>{" "}
             </div>
             <label>Espace en bas de page (pour une main)</label>
+          </div>
+          <Separator />
+          <div className="flex justify-between items-center">
+            <p>Emplacement des controles</p>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={floaterSide}
+              onValueChange={(val: FloaterSide) => setFloaterSide(val)}
+            >
+              <ToggleGroupItem value={FloaterSide.Left}>
+                <PanelLeft />
+              </ToggleGroupItem>
+              <ToggleGroupItem value={FloaterSide.Right}>
+                <PanelRight />
+              </ToggleGroupItem>
+              <ToggleGroupItem value={FloaterSide.Hidden}>
+                <EyeOff />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
           <Separator />
           <div className="flex gap-4 items-center">
