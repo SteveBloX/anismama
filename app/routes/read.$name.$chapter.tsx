@@ -16,6 +16,7 @@ import {
   Home,
   PanelLeft,
   PanelRight,
+  PanelTop,
   Settings,
   Star,
 } from "lucide-react";
@@ -198,7 +199,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 enum FloaterSide {
   Left = "LEFT",
   Right = "RIGHT",
-  Hidden = "HIDDEN",
+  Top = "TOP",
 }
 
 export default function Read() {
@@ -369,19 +370,18 @@ export default function Read() {
   return (
     <div className="flex flex-col justify-center">
       <div
-        className={`lg:fixed top-0 left-0 lg:top-2 ${
+        className={`${floaterSide !== FloaterSide.Top ? "lg:fixed" : ""} top-0 lg:top-2 ${
           floaterSide !== FloaterSide.Right
-            ? " lg:left-3"
-            : "lg:right-3 w-[400px]"
-        }${
-          floaterSide === FloaterSide.Hidden ? " lg:hidden" : ""
-        } border border-gray-200 lg:rounded-md lg:backdrop-blur-3xl p-1 flex flex-col gap-1 mb-5`}
+            ? "lg:left-3"
+            : "lg:right-3 "
+         } border border-gray-200 lg:rounded-md lg:backdrop-blur-3xl p-1 flex flex-col gap-1 mb-5`}
       >
         <ToggleGroup
           onValueChange={toggleOption}
           variant="default"
           type="multiple"
           value={options}
+          size="sm"
         >
           <ToggleGroupItem value="home">
             <Home />
@@ -569,8 +569,8 @@ export default function Read() {
               <ToggleGroupItem value={FloaterSide.Right}>
                 <PanelRight />
               </ToggleGroupItem>
-              <ToggleGroupItem value={FloaterSide.Hidden}>
-                <EyeOff />
+              <ToggleGroupItem value={FloaterSide.Top}>
+                <PanelTop />
               </ToggleGroupItem>
             </ToggleGroup>
           </div>

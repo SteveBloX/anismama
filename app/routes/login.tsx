@@ -12,6 +12,7 @@ import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
@@ -144,13 +145,13 @@ export default function LoginPage() {
           <Button type="submit" className="w-full">
             Se connecter
           </Button>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-center justify-between gap-3">
             <div className="flex items-center">
-              <Input
+              <Checkbox
                 id="remember"
                 name="remember"
-                type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                defaultChecked
               />
               <label
                 htmlFor="remember"
