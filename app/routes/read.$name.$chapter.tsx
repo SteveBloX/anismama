@@ -3,6 +3,7 @@ import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -326,6 +327,9 @@ export default function Read() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [floaterSide, setFloaterSide] = useState<FloaterSide>(FloaterSide.Left);
+  const [floaterSize, setFloaterSize] = useState<"default" | "sm" | "lg">(
+    "default"
+  );
   useEffect(() => {
     const dataJson = localStorage.getItem("settings");
     if (!dataJson || dataJson === "") return;
@@ -334,6 +338,7 @@ export default function Read() {
     if (data.marginBottom) setMarginBottom(data.marginBottom);
     if (data.invertedControls) setInvertedControls(data.invertedControls);
     if (data.floaterSide) setFloaterSide(data.floaterSide);
+    if (data.floaterSize) setFloaterSize(data.floaterSize);
   }, []);
 
   function updateLocalStorage({
@@ -341,11 +346,13 @@ export default function Read() {
     newInvertedControls = invertedControls,
     newSettingsSaved = settingsSaved,
     newFloaterSide = floaterSide,
+    newFloaterSize = floaterSize,
   }: {
     newMarginBottom?: number;
     newInvertedControls?: boolean;
     newSettingsSaved?: boolean;
     newFloaterSide: FloaterSide;
+    newFloaterSize?: "default" | "sm" | "lg";
   }) {
     if (!newSettingsSaved) {
       localStorage.setItem("settings", "");
@@ -355,6 +362,7 @@ export default function Read() {
       marginBottom: newMarginBottom,
       invertedControls: newInvertedControls,
       floaterSide: newFloaterSide,
+      floaterSize: newFloaterSize,
     };
     localStorage.setItem("settings", JSON.stringify(newSettings));
   }
@@ -370,18 +378,18 @@ export default function Read() {
   return (
     <div className="flex flex-col justify-center">
       <div
-        className={`${floaterSide !== FloaterSide.Top ? "lg:fixed" : ""} top-0 lg:top-2 ${
-          floaterSide !== FloaterSide.Right
-            ? "lg:left-3"
-            : "lg:right-3 "
-         } border border-gray-200 lg:rounded-md lg:backdrop-blur-3xl p-1 flex flex-col gap-1 mb-5`}
+        className={`${
+          floaterSide !== FloaterSide.Top ? "lg:fixed" : ""
+        } top-0 lg:top-2 ${
+          floaterSide !== FloaterSide.Right ? "lg:left-3" : "lg:right-3 "
+        } border border-gray-200 lg:rounded-md lg:backdrop-blur-3xl p-1 flex flex-col gap-1 mb-5`}
       >
         <ToggleGroup
           onValueChange={toggleOption}
           variant="default"
           type="multiple"
           value={options}
-          size="sm"
+          size={floaterSize}
         >
           <ToggleGroupItem value="home">
             <Home />
@@ -406,6 +414,7 @@ export default function Read() {
         <Separator />
         <ToggleGroup
           type="single"
+          size={floaterSize}
           onValueChange={(vals) => {
             if (vals.includes("previous")) {
               navigate(
@@ -561,7 +570,11 @@ export default function Read() {
               type="single"
               variant="outline"
               value={floaterSide}
-              onValueChange={(val: FloaterSide) => setFloaterSide(val)}
+              onValueChange={(val: FloaterSide) => {
+                setFloaterSide(val);
+                updateLocalStorage({ newFloaterSide: val });
+              }}
+              size="sm"
             >
               <ToggleGroupItem value={FloaterSide.Left}>
                 <PanelLeft />
@@ -573,6 +586,42 @@ export default function Read() {
                 <PanelTop />
               </ToggleGroupItem>
             </ToggleGroup>
+          </div>
+          <div className="flex flex-col gap-1">
+            <p>Taille des controles</p>
+            <Select
+              value={floaterSize}
+              onValueChange={(val) => {
+                setFloaterSize(val as "default" | "sm" | "lg");
+                updateLocalStorage({
+                  newFloaterSize: val as "default" | "sm" | "lg",
+                });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  {
+                    value: "sm",
+                    label: "Petit",
+                  },
+                  {
+                    value: "default",
+                    label: "Normal",
+                  },
+                  {
+                    value: "lg",
+                    label: "Grand",
+                  },
+                ].map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Separator />
           <div className="flex gap-4 items-center">

@@ -349,7 +349,7 @@ export default function MangaDetails() {
             onOpenChange={setAltTitlesOpen}
             className="mx-4 lg:mx-0 lg:mt-4"
           >
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2">
               <h1 className="text-4xl font-bold">{data.title}</h1>{" "}
               {data.alternateNames && data.alternateNames.length > 0 && (
                 <CollapsibleTrigger>
@@ -359,8 +359,8 @@ export default function MangaDetails() {
                 </CollapsibleTrigger>
               )}
             </div>
-            <CollapsibleContent>
-              <h4 className="text-lg font-bold mt-2">Autres titres</h4>
+            <CollapsibleContent className="mb-3 mt-1.5">
+              <h4 className="text-lg font-bold">Autres titres</h4>
               <ul>
                 {data.alternateNames.map((name) => (
                   <li key={name}>{name}</li>
@@ -368,26 +368,24 @@ export default function MangaDetails() {
               </ul>
             </CollapsibleContent>
           </Collapsible>
-          {data.userManga && (
-            <div className="mt-2 flex flex-col lg:flex-row lg:-mt-1 mb-3 gap-2 mx-4 lg:mx-0">
-              {data.userManga.finished && (
-                <Button onClick={() => setRestartDialogOpen(true)}>
-                  Recommencer le manga
+          <div className="pt-3 flex flex-col lg:flex-row lg:-mt-1 mb-3 gap-2 mx-4 lg:mx-0">
+            {data.userManga && data.userManga.finished && (
+              <Button onClick={() => setRestartDialogOpen(true)}>
+                Recommencer le manga
+              </Button>
+            )}
+            {data.userManga && data.userManga.progress !== "{}" ? (
+              <Link to={`/read/${data.id}/latest`}>
+                <Button variant="outline" className="w-full lg:w-unset">
+                  Reprendre la lecture
                 </Button>
-              )}
-              {data.userManga.progress !== "{}" ? (
-                <Link to={`/read/${data.id}/latest`}>
-                  <Button variant="outline" className="w-full lg:w-unset">
-                    Reprendre la lecture
-                  </Button>
-                </Link>
-              ) : (
-                <Link to={`/read/${data.id}/1`}>
-                  <Button>Commencer la lecture</Button>
-                </Link>
-              )}
-            </div>
-          )}
+              </Link>
+            ) : (
+              <Link to={`/read/${data.id}/1`}>
+                <Button>Commencer la lecture</Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="mx-4 lg:mx-0">
