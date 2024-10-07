@@ -40,6 +40,7 @@ import {
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { useRevalidator } from "react-router";
 import { useMediaQuery } from "~/hooks/use-media-query";
+import Navbar from "~/components/navbar";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -303,212 +304,221 @@ export default function MangaDetails() {
     setIsHistoryOpen(false);
   }
   return (
-    <div className="flex justify-center w-[100vw] mt-10">
-      <div className="w-full lg:w-1/2 3xl:w-1/3 lg:-ml-36">
-        <div className="flex gap-2 flex-col lg:flex-row mx-4 lg:mx-0">
-          <img src={data.coverImg} alt={data.title} className="rounded-lg" />
-          <ToggleGroup
-            type="multiple"
-            orientation={isMobile ? "horizontal" : "vertical"}
-            className="flex justify-center lg:flex-col lg:justify-between gap-1"
-            value={toggleGroupValue}
-            onValueChange={toggleGroupChange}
-          >
-            <TooltipProvider>
-              {toggleGroupActions.map((action) => (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <ToggleGroupItem
-                      key={action.value}
-                      value={action.value}
-                      className="p-8 w-full lg:w-unset  lg:p-8 lg:h-full"
-                      style={{
-                        background: toggleGroupValue.includes(action.value)
-                          ? "#e8e8e8"
-                          : "",
-                      }}
-                      disabled={
-                        action.isProgression &&
-                        !(data.userManga && data.userManga.progress !== "{}")
-                      }
-                    >
-                      {action.icon}
-                    </ToggleGroupItem>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="p-2">
-                    {action.description}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </TooltipProvider>
-          </ToggleGroup>
-        </div>
-        <div className="flex flex-col-reverse lg:flex-col">
-          <Collapsible
-            open={altTitlesOpen}
-            onOpenChange={setAltTitlesOpen}
-            className="mx-4 lg:mx-0 lg:mt-4"
-          >
-            <div className="flex gap-2">
-              <h1 className="text-4xl font-bold">{data.title}</h1>{" "}
-              {data.alternateNames && data.alternateNames.length > 0 && (
-                <CollapsibleTrigger>
-                  <Button variant="ghost" asChild>
-                    <ChevronsUpDown />
+    <>
+      <Navbar items={[{ title: "Accueil", link: "/" }]} />
+      <div className="flex justify-center w-[100vw] mt-10">
+        <div className="w-full lg:w-1/2 3xl:w-1/3 lg:-ml-36">
+          <div className="flex gap-2 flex-col lg:flex-row mx-4 lg:mx-0">
+            <img
+              src={data.coverImg}
+              alt={data.title}
+              className="rounded-lg object-cover"
+            />
+            <ToggleGroup
+              type="multiple"
+              orientation={isMobile ? "horizontal" : "vertical"}
+              className="flex justify-center lg:flex-col lg:justify-between gap-1"
+              value={toggleGroupValue}
+              onValueChange={toggleGroupChange}
+            >
+              <TooltipProvider>
+                {toggleGroupActions.map((action) => (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ToggleGroupItem
+                        key={action.value}
+                        value={action.value}
+                        className="p-8 w-full lg:w-unset  lg:p-8 lg:h-full"
+                        style={{
+                          background: toggleGroupValue.includes(action.value)
+                            ? "#e8e8e8"
+                            : "",
+                        }}
+                        disabled={
+                          action.isProgression &&
+                          !(data.userManga && data.userManga.progress !== "{}")
+                        }
+                      >
+                        {action.icon}
+                      </ToggleGroupItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="p-2">
+                      {action.description}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </TooltipProvider>
+            </ToggleGroup>
+          </div>
+          <div className="flex flex-col-reverse lg:flex-col">
+            <Collapsible
+              open={altTitlesOpen}
+              onOpenChange={setAltTitlesOpen}
+              className="mx-4 lg:mx-0 lg:mt-4"
+            >
+              <div className="flex gap-2">
+                <h1 className="text-4xl font-bold">{data.title}</h1>{" "}
+                {data.alternateNames && data.alternateNames.length > 0 && (
+                  <CollapsibleTrigger>
+                    <Button variant="ghost" asChild>
+                      <ChevronsUpDown />
+                    </Button>
+                  </CollapsibleTrigger>
+                )}
+              </div>
+              <CollapsibleContent className="mb-3 mt-1.5">
+                <h4 className="text-lg font-bold">Autres titres</h4>
+                <ul>
+                  {data.alternateNames.map((name) => (
+                    <li key={name}>{name}</li>
+                  ))}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
+            <div className="pt-3 flex flex-col lg:flex-row lg:-mt-1 mb-3 gap-2 mx-4 lg:mx-0">
+              {data.userManga && data.userManga.finished && (
+                <Button onClick={() => setRestartDialogOpen(true)}>
+                  Recommencer le manga
+                </Button>
+              )}
+              {data.userManga && data.userManga.progress !== "{}" ? (
+                <Link to={`/read/${data.id}/latest`}>
+                  <Button variant="outline" className="w-full lg:w-unset">
+                    Reprendre la lecture
                   </Button>
-                </CollapsibleTrigger>
+                </Link>
+              ) : (
+                <Link to={`/read/${data.id}/1`}>
+                  <Button>Commencer la lecture</Button>
+                </Link>
               )}
             </div>
-            <CollapsibleContent className="mb-3 mt-1.5">
-              <h4 className="text-lg font-bold">Autres titres</h4>
-              <ul>
-                {data.alternateNames.map((name) => (
-                  <li key={name}>{name}</li>
-                ))}
-              </ul>
-            </CollapsibleContent>
-          </Collapsible>
-          <div className="pt-3 flex flex-col lg:flex-row lg:-mt-1 mb-3 gap-2 mx-4 lg:mx-0">
-            {data.userManga && data.userManga.finished && (
-              <Button onClick={() => setRestartDialogOpen(true)}>
-                Recommencer le manga
-              </Button>
-            )}
-            {data.userManga && data.userManga.progress !== "{}" ? (
-              <Link to={`/read/${data.id}/latest`}>
-                <Button variant="outline" className="w-full lg:w-unset">
-                  Reprendre la lecture
-                </Button>
-              </Link>
-            ) : (
-              <Link to={`/read/${data.id}/1`}>
-                <Button>Commencer la lecture</Button>
-              </Link>
-            )}
           </div>
-        </div>
 
-        <div className="mx-4 lg:mx-0">
-          <h3 className="text-lg font-bold">Résumé</h3>
-          <p className="mt-1">{data.synopsis}</p>
-          {data.userManga && timesFinished > 0 && (
-            <span className="italic text-gray-400 mt-1">
-              Lu {timesFinished} fois
-            </span>
+          <div className="mx-4 lg:mx-0">
+            <h3 className="text-lg font-bold">Résumé</h3>
+            <p className="mt-1">{data.synopsis}</p>
+            {data.userManga && timesFinished > 0 && (
+              <span className="italic text-gray-400 mt-1">
+                Lu {timesFinished} fois
+              </span>
+            )}
+          </div>
+          {data.tags.length > 0 && (
+            <Carousel className="mt-3 select-none mx-4 lg:mx-0">
+              <CarouselContent className="">
+                {data.tags.map((tag) => (
+                  <CarouselItem className="basis-1/8">
+                    <Link to={`/?tags=${tag}#search`}>
+                      <Badge variant="outline">{tag}</Badge>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious /> <CarouselNext />
+            </Carousel>
           )}
-        </div>
-        {data.tags.length > 0 && (
-          <Carousel className="mt-3 select-none mx-4 lg:mx-0">
-            <CarouselContent className="">
-              {data.tags.map((tag) => (
-                <CarouselItem className="basis-1/8">
-                  <Link to={`/?tags=${tag}#search`}>
-                    <Badge variant="outline">{tag}</Badge>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious /> <CarouselNext />
-          </Carousel>
-        )}
-        <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
-          <Input
-            value={chaptersSearch}
-            onChange={(e) => setChaptersSearch(e.target.value)}
-            placeholder="Rechercher un chapitre..."
-            className="shadow-none border-gray-100"
-          />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 mt-2">
-            {Array(data.chaptersAmount)
-              .fill(0)
-              .filter((_, i) =>
-                normalizeString(`Chapitre ${i + 1}`).includes(
-                  normalizeString(chaptersSearch)
+          <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
+            <Input
+              value={chaptersSearch}
+              onChange={(e) => setChaptersSearch(e.target.value)}
+              placeholder="Rechercher un chapitre..."
+              className="shadow-none border-gray-100"
+            />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 mt-2">
+              {Array(data.chaptersAmount)
+                .fill(0)
+                .filter((_, i) =>
+                  normalizeString(`Chapitre ${i + 1}`).includes(
+                    normalizeString(chaptersSearch)
+                  )
                 )
-              )
-              .map((_, t) => {
-                const details = data.chaptersDetails.find(
-                  (chap) => chap.number === t + 1
-                );
-                let pagesAmount;
-                if (details) {
-                  pagesAmount = details.pagesAmount;
-                }
-                return (
-                  <Link
-                    to={`/read/${data.id}/${t + 1}`}
-                    key={t + 1}
-                    className="p-2 border border-gray-100 rounded-md flex flex-col"
-                  >
-                    <span>Chapitre {t + 1}</span>
-                    {pagesAmount && (
-                      <span className="text-sm text-gray-600">
-                        {pagesAmount} page{pagesAmount !== 1 && "s"}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+                .map((_, t) => {
+                  const details = data.chaptersDetails.find(
+                    (chap) => chap.number === t + 1
+                  );
+                  let pagesAmount;
+                  if (details) {
+                    pagesAmount = details.pagesAmount;
+                  }
+                  return (
+                    <Link
+                      to={`/read/${data.id}/${t + 1}`}
+                      key={t + 1}
+                      className="p-2 border border-gray-100 rounded-md flex flex-col"
+                    >
+                      <span>Chapitre {t + 1}</span>
+                      {pagesAmount && (
+                        <span className="text-sm text-gray-600">
+                          {pagesAmount} page{pagesAmount !== 1 && "s"}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+            </div>
           </div>
         </div>
-      </div>
-      <ResponsiveDialog
-        submitText={"Enregister"}
-        onSubmit={onHistoryEditSubmit}
-        open={isHistoryOpen}
-        setOpen={setIsHistoryOpen}
-        title={"Modifier l'historique de lecture"}
-        onCancel={() => {
-          setNewProgress(progress);
-        }}
-      >
-        <div className="flex flex-col gap-1.5">
-          {Object.entries(newProgress).length > 0 ? (
-            Object.entries(newProgress).map((chapter) => {
-              const chapterNum = chapter[0];
-              const { currentPage, totalPage } = chapter[1];
-              return (
-                <div
-                  key={chapterNum}
-                  className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-lg">Chapitre {chapterNum}</span>
-                    <span className="">Page {currentPage}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    className="h-full"
-                    onClick={() => {
-                      const prog = newProgress;
-                      delete prog[chapterNum];
-                      // spread the object so react rerenders the component
-                      setNewProgress({ ...prog });
-                    }}
+        <ResponsiveDialog
+          submitText={"Enregister"}
+          onSubmit={onHistoryEditSubmit}
+          open={isHistoryOpen}
+          setOpen={setIsHistoryOpen}
+          title={"Modifier l'historique de lecture"}
+          onCancel={() => {
+            setNewProgress(progress);
+          }}
+        >
+          <div className="flex flex-col gap-1.5">
+            {Object.entries(newProgress).length > 0 ? (
+              Object.entries(newProgress).map((chapter) => {
+                const chapterNum = chapter[0];
+                const { currentPage, totalPage } = chapter[1];
+                return (
+                  <div
+                    key={chapterNum}
+                    className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md"
                   >
-                    <X className="text-red-500" />
-                  </Button>
-                </div>
-              );
-            })
-          ) : (
-            <p className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md text-gray-600">
-              Vide
-            </p>
-          )}
-        </div>
-      </ResponsiveDialog>
-      <ResponsiveDialog
-        danger
-        description=""
-        submitText="Recommencer"
-        onSubmit={reset}
-        title="Recommencer le manga"
-        open={restartDialogOpen}
-        setOpen={setRestartDialogOpen}
-      >
-        <p>Êtes-vous sur de vouloir recommencer ce manga à partir du début ?</p>
-      </ResponsiveDialog>
-    </div>
+                    <div className="flex flex-col">
+                      <span className="text-lg">Chapitre {chapterNum}</span>
+                      <span className="">Page {currentPage}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="h-full"
+                      onClick={() => {
+                        const prog = newProgress;
+                        delete prog[chapterNum];
+                        // spread the object so react rerenders the component
+                        setNewProgress({ ...prog });
+                      }}
+                    >
+                      <X className="text-red-500" />
+                    </Button>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="rounded-lg px-3 py-2 flex justify-between items-center border border-gray-100 shadow-md text-gray-600">
+                Vide
+              </p>
+            )}
+          </div>
+        </ResponsiveDialog>
+        <ResponsiveDialog
+          danger
+          description=""
+          submitText="Recommencer"
+          onSubmit={reset}
+          title="Recommencer le manga"
+          open={restartDialogOpen}
+          setOpen={setRestartDialogOpen}
+        >
+          <p>
+            Êtes-vous sur de vouloir recommencer ce manga à partir du début ?
+          </p>
+        </ResponsiveDialog>
+      </div>
+    </>
   );
 }

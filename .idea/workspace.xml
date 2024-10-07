@@ -5,11 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_09_2024_23_06_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_09_2024_23_06__Changes_.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +19,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
@@ -91,7 +91,8 @@
       <workItem from="1727627563581" duration="22693000" />
       <workItem from="1727881717531" duration="11098000" />
       <workItem from="1727980524993" duration="5060000" />
-      <workItem from="1728197340773" duration="1211000" />
+      <workItem from="1728197340773" duration="2006000" />
+      <workItem from="1728317550488" duration="3993000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />

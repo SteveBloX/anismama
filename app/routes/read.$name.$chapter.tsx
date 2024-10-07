@@ -1,4 +1,11 @@
-import { ActionFunction, LoaderFunction, redirect } from "@remix-run/node";
+import {
+  ActionFunction,
+  json,
+  LinksFunction,
+  LoaderFunction,
+  MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import {
   Select,
@@ -15,6 +22,7 @@ import {
   Eye,
   EyeOff,
   Home,
+  List,
   PanelLeft,
   PanelRight,
   PanelTop,
@@ -32,6 +40,19 @@ import { Separator } from "~/components/ui/separator";
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Slider } from "~/components/ui/slider";
+
+export const meta: MetaFunction = ({ data }: { data: any }) => {
+  if (!data) return [];
+  return [
+    {
+      title:
+        "Anismama | " +
+        data.prettyMangaName +
+        " - Chapitre " +
+        data.chapterNumber,
+    },
+  ];
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -84,7 +105,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     .match(/<h3 id="titreOeuvre".+>(.+)<\/h3>/gm)[0]
     .split(">")[1]
     .split("<")[0];
-  return {
+  return json({
     chaptersAmount,
     mangaName: params.name,
     chapterNumber: params.chapter,
@@ -94,7 +115,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isWatchlisted,
     isConnected: !!user,
     page,
-  };
+  });
 };
 
 enum Action {
@@ -223,7 +244,7 @@ export default function Read() {
   ]);
 
   async function toggleOption(options: string[]) {
-    const excluded = ["settings", "home", "details"];
+    const excluded = ["more", "home", "settings"];
     if (options.includes("home")) {
       navigate("/");
       return;
