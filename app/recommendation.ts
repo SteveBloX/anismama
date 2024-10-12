@@ -1,57 +1,51 @@
 export type RecommendationManga = {
   name: string;
   tags: string[];
-  timesRead?: number;
-  isFavorite?: boolean;
   id: string;
+  score?: number; // Le score est calculé uniquement sur les tags
 };
 
-export function recommendMangas(
+function 
+
+// Fonction pour calculer les scores des mangas
+export function calculateMangaScores(
   readMangas: RecommendationManga[],
   availableMangas: RecommendationManga[]
 ): RecommendationManga[] {
   const tagScores: Record<string, number> = {};
 
-  // 1. Parcourir les mangas lus par l'utilisateur pour analyser les tags et la fréquence
+  // 1. Calculer les scores pour chaque tag en fonction des mangas lus
   readMangas.forEach((manga) => {
     manga.tags.forEach((tag) => {
       if (!tagScores[tag]) {
         tagScores[tag] = 0;
       }
-      // Plus le manga a été lu, plus les tags associés prennent de l'importance
-      tagScores[tag] += manga.timesRead;
+      tagScores[tag] += 1; // Chaque occurrence du tag ajoute +1 au score
     });
   });
 
-  // 2. Filtrer les mangas disponibles qui n'ont pas encore été lus
-  const unreadMangas = availableMangas.filter(
-    (manga) => !readMangas.some((readManga) => readManga.name === manga.name)
-  );
-
-  // 3. Attribuer un score de recommandation à chaque manga non lu
-  const recommendedMangas = unreadMangas.map((manga) => {
+  // 2. Attribuer un score à chaque manga disponible en fonction des tags
+  return availableMangas.map((manga) => {
     let score = 0;
 
-    // Calculer le score basé sur les tags
+    // Calculer le score basé uniquement sur les tags
     manga.tags.forEach((tag) => {
       if (tagScores[tag]) {
-        score += tagScores[tag]; // Plus le tag est fréquent, plus le score augmente
+        score += tagScores[tag]; // Ajouter le score du tag s'il existe dans les mangas lus
       }
     });
 
-    // Si le manga est favori dans les mangas lus, cela augmente la recommandation des mangas avec les mêmes tags
-    const isFavoriteMatch = readMangas.some(
-      (readManga) =>
-        readManga.isFavorite &&
-        readManga.tags.some((tag) => manga.tags.includes(tag))
-    );
-    if (isFavoriteMatch) {
-      score *= 1.5; // Bonus pour les mangas dont les tags sont associés aux favoris
-    }
-
     return { ...manga, score };
   });
+}
 
-  // 4. Trier les mangas par score décroissant
-  return recommendedMangas.sort((a, b) => b.score - a.score);
+// Fonction pour recommander des mangas
+export function recommendMangas(
+  scoredMangas: RecommendationManga[]
+): RecommendationManga[] {
+  // 1. Filtrer les mangas ayant un score
+  const mangasWithScore = scoredMangas.filter((manga) => manga.score !== undefined);
+
+  // 2. Trier les mangas par score décroissant
+  return mangasWithScore.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
