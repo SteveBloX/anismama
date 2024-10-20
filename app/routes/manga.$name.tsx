@@ -41,27 +41,23 @@ import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { useRevalidator } from "react-router";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import Navbar from "~/components/navbar";
+import useProvider, { Providers } from "~/providers/lib";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
-  const res = await fetch(`https://anime-sama.fr/catalogue/${params.name}`);
-  const text = await res.text();
-  const root = parse(text);
-  const coverImg = root.getElementById("coverOeuvre")?.getAttribute("src");
-  const title = root.querySelector("#titreOeuvre")?.text;
-  // get element by text content
-  const synopsis = root.text
-    .split("Synopsis")[1]
-    .split("Genres")[0]
-    .replace(/\s+/g, " ")
-    .trim();
-  const tags = root.text
-    .split("Genres")[1]
-    .split("Sources")[0]
-    .replace(/\s+/g, " ")
-    .trim()
-    .split(", ");
-  const alternateNames = root.querySelector("#titreAlter")?.text.split(", ");
+  if (!params.name) {
+    return new Response(null, { status: 404 });
+  }
+  let prov = Providers.animeSama;
+  const manga = await prisma.manga.findFirst({
+    where: {
+      id: params.name,
+    },
+  });
+  if (manga) {
+    prov = manga.provider as Providers;
+  }
+  const provider = useProvider(prov);
   /*const variants = root.querySelectorAll("h2").find((el) => el.text === "Manga")
     ?.nextElementSibling?.innerHTML;
   .map((el) => {});
@@ -75,43 +71,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       },
     });
   }
-  const chaptersRes = await fetch(
-    `https://anime-sama.fr/catalogue/${params.name}/scan/vf/episodes.js`
-  );
-  const chaptersText = await chaptersRes.text();
-  const chapters = chaptersText.match(/eps[0-9]+=/gm);
-  const chaptersAmount = chapters?.length;
-  const chaptersDetails = chapters?.map((ch, i) => {
-    const num = i + 1;
-    let pagesAmount;
-    try {
-      pagesAmount =
-        chaptersText.split(`var eps${num}= [`)[1].split("];")[0].split(",")
-          .length - 1;
-    } catch (e) {
-      try {
-        pagesAmount = parseInt(
-          chaptersText.split(`eps${num}.length = `)[1].split(";")[0]
-        );
-      } catch (e) {
-        console.log(num);
-      }
-    }
-    return {
-      number: num,
-      pagesAmount,
-    };
+  const info = await provider.getManga(params.name, {
+    info: true,
+    chapters: true,
   });
   return {
     id: params.name,
-    synopsis,
-    tags,
-    title,
-    coverImg,
-    alternateNames,
     userManga,
-    chaptersAmount,
-    chaptersDetails,
+    ...info,
   };
 };
 

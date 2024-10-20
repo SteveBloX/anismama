@@ -40,6 +40,8 @@ import { Separator } from "~/components/ui/separator";
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Slider } from "~/components/ui/slider";
+import createManga from "~/createManga";
+import useProvider, { Providers } from "~/providers/lib";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -55,6 +57,7 @@ export const meta: MetaFunction = ({ data }: { data: any }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  console.log("Loading manga: " + params.name);
   const user = await getUser(request);
   let isFavorited = false;
   let isWatchlisted = false;
@@ -63,13 +66,63 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return new Response(null, { status: 400 });
   let userManga;
   if (user) {
+    console.log("Getting user manga");
     userManga = await prisma.userManga.findFirst({
       where: {
         userId: user.id,
         mangaId: params.name,
       },
+      include: {
+        manga: true,
+      },
     });
   }
+  const manga = userManga
+    ? userManga.manga
+    : await prisma.manga.findFirst({
+        where: {
+          mangaId: params.name,
+        },
+      });
+  function getPagesAmount(
+    chaptersDetails: { number: number; pagesAmount: number }[]
+  ) {
+    return chaptersDetails.find(
+      (chap: { number: number; pagesAmount: number }) =>
+        chap.number === parseInt(params.chapter)
+    )?.pagesAmount;
+  }
+  let prettyMangaName;
+  let data;
+  if (manga) {
+    console.log("Getting manga data");
+    prettyMangaName = manga.title;
+    const mangaProvider = useProvider(manga.provider as Providers);
+    const chaptersData = await mangaProvider.getManga(params.name, {
+      chapters: true,
+    });
+    data = {
+      chaptersAmount: chaptersData.chaptersAmount,
+      pagesAmount: getPagesAmount(chaptersData.chaptersDetails),
+    };
+  } else {
+    console.log("Creating manga");
+    const mangaData = await createManga(params.name);
+    data = {
+      ...mangaData,
+      pagesAmount: getPagesAmount(mangaData.chaptersDetails),
+    };
+    prettyMangaName = data.title;
+    if (user && userManga) {
+      await prisma.userManga.create({
+        data: {
+          userId: user.id,
+          mangaId: params.name,
+        },
+      });
+    }
+  }
+
   if (params.chapter === "latest" && !user) {
     return redirect(`/read/${params.name}/1`);
   }
@@ -86,35 +139,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       page = pageData.currentPage;
     }
   }
-  // get chapters amount
-  const res = await fetch(
-    `https://anime-sama.fr/catalogue/${params.name}/scan/vf/episodes.js`
-  );
-  const text = await res.text();
-  const chapters = text.match(/eps[0-9]+=/gm);
-  const chaptersAmount = chapters?.length;
-  const pagesAmount =
-    text.split(`var eps${params.chapter}= [`)[1].split("];")[0].split(",")
-      .length - 1;
-  // get manga real name
-  const mainPageRes = await fetch(
-    `https://anime-sama.fr/catalogue/${params.name}/scan/vf/`
-  );
-  const mainPageText = await mainPageRes.text();
-  const prettyMangaName = mainPageText
-    .match(/<h3 id="titreOeuvre".+>(.+)<\/h3>/gm)[0]
-    .split(">")[1]
-    .split("<")[0];
+
   return json({
-    chaptersAmount,
     mangaName: params.name,
     chapterNumber: params.chapter,
-    pagesAmount,
     prettyMangaName,
+    ...data,
+    chaptersDetails: null,
     isFavorited,
     isWatchlisted,
     isConnected: !!user,
     page,
+    provider: manga?.provider || Providers.animeSama,
   });
 };
 
@@ -137,6 +173,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     },
   });
   if (!userManga) {
+    const manga = await prisma.manga.findFirst({
+      where: {
+        mangaId: params.name,
+      },
+    });
+    if (!manga) {
+      await createManga(params.name);
+    }
     userManga = await prisma.userManga.create({
       data: {
         userId: user.id,
@@ -212,6 +256,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         timesFinished: {
           increment: 1,
         },
+        isWatchlisted: false,
       },
     });
   }
@@ -235,6 +280,7 @@ export default function Read() {
     isWatchlisted: boolean;
     isConnected: boolean;
     page?: number;
+    provider: Providers;
   } = useLoaderData();
   const navigate = useNavigate();
   const { revalidate } = useRevalidator();
@@ -242,6 +288,7 @@ export default function Read() {
     ...(data.isFavorited ? ["favorite"] : []),
     ...(data.isWatchlisted ? ["watchlist"] : []),
   ]);
+  const mangaProvider = useProvider(data.provider);
 
   async function toggleOption(options: string[]) {
     const excluded = ["more", "home", "settings"];
@@ -255,15 +302,25 @@ export default function Read() {
     if (options.includes("details")) {
       navigate(`/manga/${data.mangaName}`);
     }
-    const res = await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
-      action: Action.SetOptions,
-      isFavorited: options.includes("favorite") ? "true" : "false",
-      isWatchlisted: options.includes("watchlist") ? "true" : "false",
-      currentlyFavorited: data.isFavorited ? "true" : "false",
-      currentlyWatchlisted: data.isWatchlisted ? "true" : "false",
-    });
-    if (res.ok) {
-      revalidate();
+    if (
+      (options.includes("favorite") && !data.isFavorited) ||
+      (options.includes("watchlist") && !data.isWatchlisted) ||
+      (!options.includes("favorite") && data.isFavorited) ||
+      (!options.includes("watchlist") && data.isWatchlisted)
+    ) {
+      const res = await submit(
+        `/read/${data.mangaName}/${data.chapterNumber}`,
+        {
+          action: Action.SetOptions,
+          isFavorited: options.includes("favorite") ? "true" : "false",
+          isWatchlisted: options.includes("watchlist") ? "true" : "false",
+          currentlyFavorited: data.isFavorited ? "true" : "false",
+          currentlyWatchlisted: data.isWatchlisted ? "true" : "false",
+        }
+      );
+      if (res.ok) {
+        revalidate();
+      }
     }
     setOptions(options.filter((option) => !excluded.includes(option)));
   }
@@ -487,9 +544,11 @@ export default function Read() {
             .map((_, i) => (
               <img
                 key={i}
-                src={`https://anime-sama.fr/s2/scans/${data.prettyMangaName}/${
-                  data.chapterNumber
-                }/${i + 1}.jpg`}
+                src={mangaProvider.getPageUrl(
+                  data.prettyMangaName,
+                  data.chapterNumber,
+                  i + 1
+                )}
                 id={`page-${i}`}
               />
             ))}

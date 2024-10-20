@@ -25,17 +25,34 @@ model User {
   userMangas UserManga[]
 }
 
+model Manga {
+  id             String      @id @default(cuid())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  mangaId        String      @unique
+  title          String
+  description    String
+  cover          String?
+  chaptersAmount Int
+  tags           String      @default("[]") // JSON
+  userMangas     UserManga[]
+  provider       String?     @default("animeSama")
+}
+
 model UserManga {
   id            String   @id @default(cuid())
   updatedAt     DateTime @updatedAt
   user          User     @relation(fields: [userId], references: [id])
   userId        String
-  mangaId       String
+  manga         Manga?   @relation(fields: [mangaId], references: [mangaId])
+  mangaId       String?
   progress      String   @default("{}")
   finished      Boolean  @default(false)
   timesFinished Int      @default(0)
   isFavorited   Boolean  @default(false)
   isWatchlisted Boolean  @default(false)
+  rating        Float?
+  isCrushed     Boolean  @default(false)
 }
 
 model Password {

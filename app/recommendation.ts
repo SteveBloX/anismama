@@ -5,10 +5,10 @@ export type RecommendationManga = {
   score?: number; // Le score est calculé uniquement sur les tags
 };
 
-function 
+//function
 
 // Fonction pour calculer les scores des mangas
-export function calculateMangaScores(
+export function recommendMangas(
   readMangas: RecommendationManga[],
   availableMangas: RecommendationManga[]
 ): RecommendationManga[] {
@@ -25,7 +25,7 @@ export function calculateMangaScores(
   });
 
   // 2. Attribuer un score à chaque manga disponible en fonction des tags
-  return availableMangas.map((manga) => {
+  const scoredMangas = availableMangas.map((manga) => {
     let score = 0;
 
     // Calculer le score basé uniquement sur les tags
@@ -37,14 +37,17 @@ export function calculateMangaScores(
 
     return { ...manga, score };
   });
+  return sortMangas(scoredMangas);
 }
 
 // Fonction pour recommander des mangas
-export function recommendMangas(
+export function sortMangas(
   scoredMangas: RecommendationManga[]
 ): RecommendationManga[] {
   // 1. Filtrer les mangas ayant un score
-  const mangasWithScore = scoredMangas.filter((manga) => manga.score !== undefined);
+  const mangasWithScore = scoredMangas.filter(
+    (manga) => manga.score !== undefined
+  );
 
   // 2. Trier les mangas par score décroissant
   return mangasWithScore.sort((a, b) => (b.score || 0) - (a.score || 0));

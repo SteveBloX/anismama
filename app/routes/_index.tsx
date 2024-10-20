@@ -1,6 +1,5 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams } from "@remix-run/react";
-import { parse } from "node-html-parser";
 import { useLoaderData } from "react-router";
 import { Input } from "~/components/ui/input";
 import { useEffect, useState } from "react";
@@ -18,6 +17,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { UserManga } from "@prisma/client";
 import { RecommendationManga, recommendMangas } from "~/recommendation";
+import useProvider, { getAllMangas, Providers } from "~/providers/lib";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Anismama" }, { name: "description", content: "Anismama!" }];
@@ -26,26 +26,7 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
   console.log("User: " + user ? user?.username : "anyme");
-  const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
-  const text = await res.text();
-  const root = parse(text);
-  const scanEls = root.querySelectorAll(".Scans");
-  const scans = scanEls.map((el) => {
-    const title = el.querySelector("h1")?.text;
-    const link = el.querySelector("a")?.getAttribute("href");
-    const img = el.querySelector("img")?.getAttribute("src");
-    const alias = el.querySelector("p")?.text;
-    const id = link.split("catalogue/")[1].split("/")[0];
-    const tags = [...el.classList._set]
-      .filter(
-        (tag) =>
-          !["cardListAnime", "Scans", " ", "-", "VOSTFR", "VF", ""].includes(
-            tag
-          )
-      )
-      .map((tag) => tag.replace(",", ""));
-    return { title, link, img, alias, id, tags };
-  });
+  const scans = await getAllMangas();
   let userMangas: UserManga[] = [];
   if (user) {
     userMangas = await prisma.userManga.findMany({
@@ -118,7 +99,7 @@ export default function Index() {
     }))
   );
   const progressions = userMangas.filter(
-    (manga) => manga.progress && manga.progress !== "{}"
+    (manga) => manga.progress && manga.progress !== "{}" && !manga.finished
   );
   const favoriteMangas = userMangas.filter((manga) => manga.isFavorited);
   const watchlist = userMangas.filter((manga) => manga.isWatchlisted);

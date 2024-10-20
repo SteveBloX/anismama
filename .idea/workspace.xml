@@ -5,11 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
-      <change afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/createManga.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/providers/anime-sama.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/providers/lib.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/recommendation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/recommendation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +23,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -92,7 +96,15 @@
       <workItem from="1727881717531" duration="11098000" />
       <workItem from="1727980524993" duration="5060000" />
       <workItem from="1728197340773" duration="2006000" />
-      <workItem from="1728317550488" duration="3993000" />
+      <workItem from="1728317550488" duration="4402000" />
+      <workItem from="1728482617457" duration="83000" />
+      <workItem from="1728756683511" duration="1519000" />
+      <workItem from="1728807391321" duration="10000" />
+      <workItem from="1728846842207" duration="4541000" />
+      <workItem from="1728921224482" duration="1449000" />
+      <workItem from="1729011412730" duration="2508000" />
+      <workItem from="1729014470627" duration="7076000" />
+      <workItem from="1729417098537" duration="3752000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />
