@@ -5,20 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
-      <change afterPath="$PROJECT_DIR$/app/fonts/Manrope.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/library.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/styles/global.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/providers/anime-sama.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/anime-sama.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/root.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/library.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/library.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/styles/global.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/styles/global.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +106,7 @@
       <workItem from="1729011412730" duration="2508000" />
       <workItem from="1729014470627" duration="7076000" />
       <workItem from="1729417098537" duration="12834000" />
-      <workItem from="1729795553306" duration="10534000" />
+      <workItem from="1729795553306" duration="11360000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />
