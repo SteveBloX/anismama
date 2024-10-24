@@ -1,0 +1,41 @@
+@font-face {
+  font-family: "Manrope";
+  src: local(""), url("../fonts/Manrope.ttf") format("truetype");
+}
+* {
+  font-family: Manrope, sans-serif;
+  font-weight: 500;
+}
+
+.bordered-grid {
+  --gap: 2em;
+  --line-thickness: 1px;
+  --line-offset: calc(var(--gap) / 2);
+  gap: var(--gap);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
+}
+
+.bordered-grid-el {
+  position: relative;
+}
+.bordered-grid-el::before,
+.bordered-grid-el::after {
+  content: "";
+  position: absolute;
+  background-color: #e1e1e1;
+  z-index: 1;
+}
+.bordered-grid-el::after {
+  inline-size: 100vw;
+  block-size: var(--line-thickness);
+  inset-inline-start: 0;
+  inset-block-start: calc(var(--line-offset) * -1);
+}
+.bordered-grid-el::before {
+  inline-size: var(--line-thickness);
+  block-size: 100vh;
+  inset-block-start: 0;
+  inset-inline-start: calc(var(--line-offset) * -1);
+}

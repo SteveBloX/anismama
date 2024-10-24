@@ -18,6 +18,7 @@ import { Button } from "~/components/ui/button";
 import { UserManga } from "@prisma/client";
 import { RecommendationManga, recommendMangas } from "~/recommendation";
 import useProvider, { getAllMangas, Providers } from "~/providers/lib";
+import { ArrowUpRight } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Anismama" }, { name: "description", content: "Anismama!" }];
@@ -131,9 +132,15 @@ export default function Index() {
       <div className="justify-center flex">
         {progressions.length > 0 && (
           <div className="mb-5 w-2/3">
-            <h1 className="text-3xl font-bold text-center mb-3">
+            <Link
+              to="/library?tab=reading"
+              className="text-3xl font-bold mb-3 flex justify-center w-full"
+            >
               Reprendre la lecture
-            </h1>
+              <button>
+                <ArrowUpRight />
+              </button>
+            </Link>
             <Carousel className="">
               <CarouselContent className="mb-5">
                 {progressions.map((manga) => {
@@ -206,7 +213,15 @@ export default function Index() {
       <div className="justify-center flex">
         {favoriteMangas.length > 0 && (
           <div className="mb-5 w-2/3">
-            <h1 className="text-3xl font-bold text-center mb-3">Favoris</h1>
+            <Link
+              to="/library?tab=favorites"
+              className="text-3xl font-bold mb-3 flex justify-center w-full"
+            >
+              Favoris
+              <button>
+                <ArrowUpRight />
+              </button>
+            </Link>
             <Carousel className="">
               <CarouselContent className="mb-5">
                 {favoriteMangas.map((manga) => (
@@ -247,7 +262,15 @@ export default function Index() {
       <div className="justify-center flex">
         {watchlist.length > 0 && (
           <div className="mb-5 w-2/3">
-            <h1 className="text-3xl font-bold text-center mb-3">Watchlist</h1>
+            <Link
+              to="/library?tab=watchlist"
+              className="text-3xl font-bold mb-3 flex justify-center w-full"
+            >
+              Watchlist
+              <button>
+                <ArrowUpRight />
+              </button>
+            </Link>
             <Carousel className="">
               <CarouselContent className="mb-5">
                 {watchlist.map((manga) => (

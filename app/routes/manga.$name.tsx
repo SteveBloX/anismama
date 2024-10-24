@@ -73,7 +73,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
   const info = await provider.getManga(params.name, {
     info: true,
-    chapters: true,
+    chapters: false,
   });
   return {
     id: params.name,
@@ -392,7 +392,10 @@ export default function MangaDetails() {
               placeholder="Rechercher un chapitre..."
               className="shadow-none border-gray-100"
             />
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 mt-2">
+            <div className="flex justify-center items-center border-gray-100 border rounded-lg h-24 mt-2">
+              <span className="text-gray-400 italic">Coming soon...</span>
+            </div>
+            {/*<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 mt-2">
               {Array(data.chaptersAmount)
                 .fill(0)
                 .filter((_, i) =>
@@ -422,8 +425,9 @@ export default function MangaDetails() {
                       )}
                     </Link>
                   );
-                })}
-            </div>
+                })
+
+            </div>*/}
           </div>
         </div>
         <ResponsiveDialog

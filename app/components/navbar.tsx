@@ -54,9 +54,7 @@ export default function Navbar({
         <NavigationMenuList>
           {items.map((item) => (
             <Link to={item.link} key={item.link}>
-              <NavigationMenuLink key={item.link}>
-                {item.title}
-              </NavigationMenuLink>
+              {item.title}
             </Link>
           ))}
         </NavigationMenuList>

@@ -8,6 +8,7 @@ import {
 import type { LinksFunction } from "@remix-run/node";
 
 import tailwind from "~/tailwind.css?url";
+import globalStyles from "~/styles/global.css?url";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -21,7 +22,8 @@ export const links: LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
   { rel: "stylesheet", href: tailwind },
-  { rel: "icon", href:"/anismama.png", type: "image/png"}
+  { rel: "stylesheet", href: globalStyles },
+  { rel: "icon", href: "/anismama.png", type: "image/png" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

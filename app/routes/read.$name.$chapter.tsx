@@ -18,7 +18,10 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUpToLine,
+  BookText,
   ClockArrowUp,
+  Ellipsis,
   Eye,
   EyeOff,
   Home,
@@ -42,6 +45,13 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { Slider } from "~/components/ui/slider";
 import createManga from "~/createManga";
 import useProvider, { Providers } from "~/providers/lib";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -113,7 +123,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       pagesAmount: getPagesAmount(mangaData.chaptersDetails),
     };
     prettyMangaName = data.title;
-    if (user && userManga) {
+    if (user && !userManga) {
       await prisma.userManga.create({
         data: {
           userId: user.id,
@@ -452,6 +462,7 @@ export default function Read() {
       });
     }
   }, []);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <div className="flex flex-col justify-center">
@@ -482,12 +493,38 @@ export default function Read() {
               </ToggleGroupItem>
             </>
           )}
-          <ToggleGroupItem value="details">
-            <Eye />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="settings">
-            <Settings />
-          </ToggleGroupItem>
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <ToggleGroupItem value="more">
+                <Ellipsis />
+              </ToggleGroupItem>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    setSettingsDialogOpen(true);
+                  }}
+                >
+                  <Settings />
+                  Paramètres
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate(`/read/${data.mangaName}/latest`)}
+                >
+                  <ArrowUpToLine />
+                  Dernier chapitre en cours
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate(`/manga/${data.mangaName}`)}
+                >
+                  <BookText />
+                  Détails
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ToggleGroup>
         <Separator />
         <ToggleGroup
