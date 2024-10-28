@@ -170,6 +170,10 @@ enum Action {
   FinishManga = "finishManga",
 }
 
+export function shouldRevalidate({ actionResult, defaultShouldRevalidate }) {
+  return false;
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await getUser(request);
   if (!user) return new Response(null, { status: 401 });
@@ -211,7 +215,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       },
     });
 
-    return new Response(null, { status: 200 });
+    return new Response(JSON.stringify({ isFavorited, isWatchlisted }), {
+      status: 200,
+    });
   } else if (action === Action.SetProgress) {
     const progress = JSON.parse(data.get("progress") as string) as {
       page: number;
@@ -299,6 +305,8 @@ export default function Read() {
     ...(data.isWatchlisted ? ["watchlist"] : []),
   ]);
   const mangaProvider = useProvider(data.provider);
+  const [isFavorited, setIsFavorited] = useState(data.isFavorited);
+  const [isWatchlisted, setIsWatchlisted] = useState(data.isWatchlisted);
 
   async function toggleOption(options: string[]) {
     const excluded = ["more", "home", "settings"];
@@ -313,10 +321,10 @@ export default function Read() {
       navigate(`/manga/${data.mangaName}`);
     }
     if (
-      (options.includes("favorite") && !data.isFavorited) ||
-      (options.includes("watchlist") && !data.isWatchlisted) ||
-      (!options.includes("favorite") && data.isFavorited) ||
-      (!options.includes("watchlist") && data.isWatchlisted)
+      (options.includes("favorite") && !isFavorited) ||
+      (options.includes("watchlist") && !isWatchlisted) ||
+      (!options.includes("favorite") && isFavorited) ||
+      (!options.includes("watchlist") && isWatchlisted)
     ) {
       const res = await submit(
         `/read/${data.mangaName}/${data.chapterNumber}`,
@@ -324,12 +332,13 @@ export default function Read() {
           action: Action.SetOptions,
           isFavorited: options.includes("favorite") ? "true" : "false",
           isWatchlisted: options.includes("watchlist") ? "true" : "false",
-          currentlyFavorited: data.isFavorited ? "true" : "false",
-          currentlyWatchlisted: data.isWatchlisted ? "true" : "false",
+          currentlyFavorited: isFavorited ? "true" : "false",
+          currentlyWatchlisted: isWatchlisted ? "true" : "false",
         }
       );
-      if (res.ok) {
-        revalidate();
+      if (res.status === 200) {
+        setIsFavorited(options.includes("favorite"));
+        setIsWatchlisted(options.includes("watchlist"));
       }
     }
     setOptions(options.filter((option) => !excluded.includes(option)));
@@ -485,10 +494,20 @@ export default function Read() {
           </ToggleGroupItem>
           {data.isConnected && (
             <>
-              <ToggleGroupItem value="favorite">
-                <Star fill={data.isFavorited ? "#000" : "#fff"} />
+              <ToggleGroupItem
+                style={{
+                  background: isFavorited ? "#e4e4e4" : "transparent",
+                }}
+                value="favorite"
+              >
+                <Star />
               </ToggleGroupItem>
-              <ToggleGroupItem value="watchlist">
+              <ToggleGroupItem
+                style={{
+                  background: isWatchlisted ? "#e4e4e4" : "transparent",
+                }}
+                value="watchlist"
+              >
                 <ClockArrowUp />
               </ToggleGroupItem>
             </>
@@ -502,15 +521,6 @@ export default function Read() {
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    setSettingsDialogOpen(true);
-                  }}
-                >
-                  <Settings />
-                  Paramètres
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={() => navigate(`/read/${data.mangaName}/latest`)}
                 >
                   <ArrowUpToLine />
@@ -521,6 +531,15 @@ export default function Read() {
                 >
                   <BookText />
                   Détails
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    setSettingsDialogOpen(true);
+                  }}
+                >
+                  <Settings />
+                  Paramètres
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

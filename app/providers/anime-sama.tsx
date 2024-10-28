@@ -1,31 +1,35 @@
 import { parse } from "node-html-parser";
 import { Provider } from "~/providers/lib";
+import { IndexManga, MangaChapters, MangaInfo } from "~/types";
 
-async function getAllMangas() {
+async function getAllMangas(): Promise<IndexManga[]> {
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
   const text = await res.text();
   const root = parse(text);
   const scanEls = root.querySelectorAll(".Scans");
-  const scans = scanEls.map((el) => {
+  const scans: IndexManga[] = scanEls.map((el) => {
     const title = el.querySelector("h1")?.text;
     const link = el.querySelector("a")?.getAttribute("href");
     const img = el.querySelector("img")?.getAttribute("src");
     const alias = el.querySelector("p")?.text;
     const id = link?.split("catalogue/")[1].split("/")[0];
-    const tags = [...el.classList._set]
+    const tags: string[] = [...el.classList._set]
       .filter(
-        (tag) =>
+        (tag: string) =>
           !["cardListAnime", "Scans", " ", "-", "VOSTFR", "VF", ""].includes(
             tag
           )
       )
-      .map((tag) => tag.replace(",", ""));
+      .map((tag: string) => tag.replace(",", ""));
     return { title, link, img, alias, id, tags };
   });
   return scans;
 }
 
-async function getManga(id: string, { info = false, chapters = false }) {
+async function getManga(
+  id: string,
+  { info = false, chapters = false }
+): Promise<MangaInfo & MangaChapters> {
   let coverImg, title, synopsis, tags, alternateNames;
   if (info) {
     console.log("Fetching manga info for", id);

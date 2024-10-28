@@ -1,5 +1,10 @@
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
-import { ActionFunction, LoaderFunction } from "@remix-run/node";
+import {
+  ActionFunction,
+  json,
+  LoaderFunction,
+  MetaFunction,
+} from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import {
   ChevronsUpDown,
@@ -8,6 +13,7 @@ import {
   RotateCcw,
   Star,
   X,
+  Heart,
 } from "lucide-react";
 import { parse } from "node-html-parser";
 import { ToggleGroupItem } from "~/components/ui/toggle-group";
@@ -20,7 +26,7 @@ import {
 import { getUser } from "~/session.server";
 import { prisma } from "~/db.server";
 import { UserManga } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { normalizeString, submit } from "~/utils";
 import {
@@ -42,6 +48,18 @@ import { useRevalidator } from "react-router";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import Navbar from "~/components/navbar";
 import useProvider, { Providers } from "~/providers/lib";
+import createManga from "~/createManga";
+import Rating from "~/components/rating";
+import { useColor } from "color-thief-react";
+
+export const meta: MetaFunction = ({ data }: { data: any }) => {
+  if (!data) return [];
+  return [
+    {
+      title: "Anismama | " + data.title,
+    },
+  ];
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -75,12 +93,32 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     info: true,
     chapters: false,
   });
-  return {
+  const ratings = await prisma.userManga.findMany({
+    where: {
+      mangaId: params.name,
+      rating: {
+        not: null,
+      },
+    },
+    select: {
+      rating: true,
+    },
+  });
+  const ratingsSum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+  const ratingsCount = ratings.length;
+  const avgRating = ratingsCount > 0 ? ratingsSum / ratingsCount : 0;
+  return json({
+    isLoggedIn: !!user,
     id: params.name,
     userManga,
+    avgRating,
     ...info,
-  };
+  });
 };
+
+export function shouldRevalidate() {
+  return false;
+}
 
 export const action: ActionFunction = async ({ request }) => {
   const user = await getUser(request);
@@ -99,8 +137,24 @@ export const action: ActionFunction = async ({ request }) => {
           userId: user.id,
           mangaId,
         },
+        select: {
+          id: true,
+          manga: {
+            select: {
+              id: true,
+            },
+          },
+        },
       });
       if (!userManga) {
+        const manga = await prisma.manga.findFirst({
+          where: {
+            mangaId,
+          },
+        });
+        if (!manga) {
+          const newManga = await createManga(mangaId);
+        }
         await prisma.userManga.create({
           data: {
             userId: user.id,
@@ -145,6 +199,53 @@ export const action: ActionFunction = async ({ request }) => {
           progress: newProgress,
         },
       });
+      break;
+    case Actions.SetRating:
+      const rating = parseInt(data.get("rating") as string);
+      const isCrushed = (data.get("isCrushed") as string) === "1";
+      const UserManga = await prisma.userManga.findFirst({
+        where: {
+          userId: user.id,
+          mangaId,
+        },
+        select: {
+          id: true,
+          manga: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+      const newData = isNaN(rating) ? { isCrushed } : { rating };
+      if (!UserManga) {
+        const manga = await prisma.manga.findFirst({
+          where: {
+            mangaId,
+          },
+        });
+        if (!manga) {
+          const newManga = await createManga(mangaId);
+        }
+        await prisma.userManga.create({
+          data: {
+            userId: user.id,
+            mangaId,
+            ...newData,
+          },
+        });
+        break;
+      }
+      await prisma.userManga.updateMany({
+        where: {
+          userId: user.id,
+          mangaId,
+        },
+        data: {
+          ...newData,
+        },
+      });
+      break;
   }
   return null;
 };
@@ -153,6 +254,7 @@ enum Actions {
   SetSettings = "setSettings",
   ResetProgression = "resetProgression",
   EditHistory = "editHistory",
+  SetRating = "setRating",
 }
 const toggleGroupActions = [
   {
@@ -181,6 +283,7 @@ const toggleGroupActions = [
 
 export default function MangaDetails() {
   const data: {
+    isLoggedIn: boolean;
     id: string;
     synopsis: string;
     tags: string[];
@@ -193,6 +296,7 @@ export default function MangaDetails() {
       number: number;
       pagesAmount: number;
     }[];
+    avgRating: number;
   } = useLoaderData();
   const revalidator = useRevalidator();
   const [chaptersSearch, setChaptersSearch] = useState("");
@@ -203,12 +307,25 @@ export default function MangaDetails() {
   const [isWatchlist, setIsWatchlist] = useState(
     data.userManga && data.userManga.isWatchlisted
   );
+  const [rating, setRating] = useState(data.userManga?.rating || 0);
+  const [isCrushed, setIsCrushed] = useState(
+    data.userManga?.isCrushed || false
+  );
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const isFinished = data.userManga?.finished;
   const timesFinished = data.userManga?.timesFinished;
   const progress = JSON.parse(data.userManga?.progress || "{}");
   const [restartDialogOpen, setRestartDialogOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 640px)");
+
+  useEffect(() => {
+    if (data.userManga) {
+      setIsFavorite(data.userManga.isFavorited);
+      setIsWatchlist(data.userManga.isWatchlisted);
+      setRating(data.userManga.rating || 0);
+      setIsCrushed(data.userManga.isCrushed || false);
+    }
+  }, []);
 
   const [toggleGroupValue, setToggleGroupValue] = useState(
     data.userManga
@@ -270,6 +387,28 @@ export default function MangaDetails() {
     });
     setIsHistoryOpen(false);
   }
+
+  async function updateRating(newRating: number) {
+    setRating(newRating);
+    const res = await submit(`/manga/${data.id}`, {
+      action: Actions.SetRating,
+      id: data.id,
+      rating: newRating.toString(),
+    });
+  }
+  async function updateCrushed() {
+    setIsCrushed(!isCrushed);
+    const res = await submit(`/manga/${data.id}`, {
+      action: Actions.SetRating,
+      id: data.id,
+      isCrushed: !isCrushed ? "1" : "0",
+    });
+  }
+
+  const colorData = useColor(data.coverImg, "hex", {
+    crossOrigin: "anonymous",
+  });
+  const mainColor = colorData.data || "#ffffff00";
   return (
     <>
       <Navbar items={[{ title: "Accueil", link: "/" }]} />
@@ -280,6 +419,9 @@ export default function MangaDetails() {
               src={data.coverImg}
               alt={data.title}
               className="rounded-lg object-cover"
+              style={{
+                boxShadow: `0 0 60px ${mainColor}`,
+              }}
             />
             <ToggleGroup
               type="multiple"
@@ -361,7 +503,27 @@ export default function MangaDetails() {
               )}
             </div>
           </div>
-
+          <div className="mx-4 lg:mx-0 mt-1 mb-2">
+            <h3 className="text-lg font-bold">Note</h3>
+            <div className="flex items-center gap-2">
+              <Rating
+                rating={data.isLoggedIn ? rating : data.avgRating}
+                setRating={updateRating}
+                disabled={!data.isLoggedIn}
+              />{" "}
+              <span className="text-lg">{data.avgRating.toFixed(1)}</span>
+              {data.isLoggedIn && (
+                <Heart
+                  className={`cursor-pointer ml-2 ${
+                    isCrushed
+                      ? "fill-primary"
+                      : "fill-muted stroke-muted-foreground"
+                  }`}
+                  onClick={updateCrushed}
+                />
+              )}
+            </div>
+          </div>
           <div className="mx-4 lg:mx-0">
             <h3 className="text-lg font-bold">Résumé</h3>
             <p className="mt-1">{data.synopsis}</p>

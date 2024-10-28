@@ -1,10 +1,11 @@
 import AnimeSama from "~/providers/anime-sama";
+import { IndexManga, MangaChapters, MangaInfo } from "~/types";
 
 export enum Providers {
   animeSama = "animeSama",
 }
 export type Provider = {
-  getAllMangas: () => Promise<any>;
+  getAllMangas: () => Promise<IndexManga[]>;
   getManga: (
     id: string,
     {
@@ -14,7 +15,7 @@ export type Provider = {
       info?: boolean;
       chapters?: boolean;
     }
-  ) => Promise<any>;
+  ) => Promise<MangaInfo & MangaChapters>;
   getPageUrl?: (
     id: string,
     chapterNum: string | number,
