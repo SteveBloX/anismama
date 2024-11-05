@@ -106,7 +106,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
   const ratingsSum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
   const ratingsCount = ratings.length;
-  const avgRating = ratingsCount > 0 ? ratingsSum / ratingsCount : 0;
+  const avgRating = ratingsCount > 0 ? ratingsSum / ratingsCount : NaN;
   return json({
     isLoggedIn: !!user,
     id: params.name,
@@ -511,7 +511,9 @@ export default function MangaDetails() {
                 setRating={updateRating}
                 disabled={!data.isLoggedIn}
               />{" "}
-              <span className="text-lg">{data.avgRating.toFixed(1)}</span>
+              {!isNaN(data.avgRating) && (
+                <span className="text-lg">{data.avgRating.toFixed(1)}</span>
+              )}
               {data.isLoggedIn && (
                 <Heart
                   className={`cursor-pointer ml-2 ${

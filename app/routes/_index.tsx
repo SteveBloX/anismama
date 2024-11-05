@@ -37,27 +37,35 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     });
   }
-  const readMangas = userMangas.map((manga) => {
-    if (manga.timesFinished < 1) return null;
+  const usrMangas = userMangas.map((manga) => {
     const correspondingManga = scans.find((scan) => scan.id === manga.mangaId);
-    if (!correspondingManga) return null;
+    if (!correspondingManga) return;
     return {
-      name: correspondingManga.title,
+      ...manga,
       tags: correspondingManga.tags.map((tag) => tag.toLowerCase()),
-      isFavorite: manga.isFavorited,
-      timesRead: manga.timesFinished,
-      id: manga.mangaId,
     };
   });
   const recommendedManga = recommendMangas(
-    readMangas.filter((manga) => !!manga),
-    scans.map((scan) => {
-      return {
-        name: scan.title,
-        tags: scan.tags.map((tag) => tag.toLowerCase()),
-        id: scan.id,
-      };
-    })
+    usrMangas,
+    scans
+      .map((scan) => {
+        return {
+          name: scan.title,
+          tags: scan.tags.map((tag) => tag.toLowerCase()),
+          id: scan.id,
+        };
+      })
+      .filter((manga) => {
+        const corrManga = userMangas.find(
+          (usrManga) => usrManga.mangaId === manga.id
+        );
+        if (!corrManga) return true;
+        return !(
+          corrManga.isFavorited ||
+          corrManga.finished ||
+          corrManga.isWatchlisted
+        );
+      })
   );
   return { scans, userMangas, loggedIn: !!user, recommendedManga };
 };
@@ -319,7 +327,7 @@ export default function Index() {
             </h1>
             <Carousel className="">
               <CarouselContent className="mb-5">
-                {recommendedManga.slice(0, 15).map((manga, i) => (
+                {recommendedManga.map((manga, i) => (
                   <CarouselItem className={`md:basis-1/2 lg:basis-1/3`}>
                     <Link
                       className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
