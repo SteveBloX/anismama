@@ -114,6 +114,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     data = {
       chaptersAmount: chaptersData.chaptersAmount,
       pagesAmount: getPagesAmount(chaptersData.chaptersDetails),
+      chaptersDetails: chaptersData.chaptersDetails,
     };
   } else {
     console.log("Creating manga");
@@ -155,7 +156,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     chapterNumber: params.chapter,
     prettyMangaName,
     ...data,
-    chaptersDetails: null,
     isFavorited,
     isWatchlisted,
     isConnected: !!user,
@@ -307,6 +307,12 @@ export default function Read() {
   const mangaProvider = useProvider(data.provider);
   const [isFavorited, setIsFavorited] = useState(data.isFavorited);
   const [isWatchlisted, setIsWatchlisted] = useState(data.isWatchlisted);
+  const [currentChapter, setCurrentChapter] = useState(data.chapterNumber);
+  useEffect(() => {
+    if (data.page) {
+      setCurrentChapter(data.chapterNumber);
+    }
+  }, []);
 
   async function toggleOption(options: string[]) {
     const excluded = ["more", "home", "settings"];
@@ -472,7 +478,7 @@ export default function Read() {
     }
   }, []);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  console.log(currentChapter);
   return (
     <div className="flex flex-col justify-center">
       <div
@@ -521,7 +527,10 @@ export default function Read() {
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  onClick={() => navigate(`/read/${data.mangaName}/latest`)}
+                  onClick={() => {
+                    navigate(`/read/${data.mangaName}/latest`);
+                    revalidate();
+                  }}
                 >
                   <ArrowUpToLine />
                   Dernier chapitre en cours
@@ -602,7 +611,7 @@ export default function Read() {
                 key={i}
                 src={mangaProvider.getPageUrl(
                   data.prettyMangaName,
-                  data.chapterNumber,
+                  currentChapter,
                   i + 1
                 )}
                 id={`page-${i}`}

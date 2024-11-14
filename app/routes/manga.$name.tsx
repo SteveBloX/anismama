@@ -418,7 +418,7 @@ export default function MangaDetails() {
             <img
               src={data.coverImg}
               alt={data.title}
-              className="rounded-lg object-cover"
+              className="rounded-lg object-cover transition-all duration-500 ease-in-out"
               style={{
                 boxShadow: `0 0 60px ${mainColor}`,
               }}
@@ -511,7 +511,7 @@ export default function MangaDetails() {
                 setRating={updateRating}
                 disabled={!data.isLoggedIn}
               />{" "}
-              {!isNaN(data.avgRating) && (
+              {data.avgRating && !isNaN(data.avgRating) && (
                 <span className="text-lg">{data.avgRating.toFixed(1)}</span>
               )}
               {data.isLoggedIn && (
