@@ -247,7 +247,8 @@ export const action: ActionFunction = async ({ request, params }) => {
           id: userManga.id,
         },
         data: {
-          ...([null, undefined, "{}"].includes(progressData)
+          ...([null, undefined, "{}"].includes(progressData) ||
+          !userManga.startedAt
             ? {
                 startedAt: new Date(),
               }
