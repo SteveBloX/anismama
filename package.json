@@ -39,6 +39,7 @@
     "cmdk": "^1.0.0",
     "color-thief-react": "^2.1.0",
     "colorthief": "^2.6.0",
+    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.3.0",
     "isbot": "^4.1.0",
     "lucide-react": "^0.445.0",

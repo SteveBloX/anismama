@@ -40,19 +40,21 @@ model Manga {
 }
 
 model UserManga {
-  id            String   @id @default(cuid())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id])
+  id            String    @id @default(cuid())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id])
   userId        String
-  manga         Manga?   @relation(fields: [mangaId], references: [mangaId])
+  manga         Manga?    @relation(fields: [mangaId], references: [mangaId])
   mangaId       String?
-  progress      String   @default("{}")
-  finished      Boolean  @default(false)
-  timesFinished Int      @default(0)
-  isFavorited   Boolean  @default(false)
-  isWatchlisted Boolean  @default(false)
+  progress      String    @default("{}")
+  finished      Boolean   @default(false)
+  timesFinished Int       @default(0)
+  isFavorited   Boolean   @default(false)
+  isWatchlisted Boolean   @default(false)
   rating        Float?
-  isCrushed     Boolean  @default(false)
+  isCrushed     Boolean   @default(false)
+  startedAt     DateTime?
+  lastReadAt    DateTime?
 }
 
 model Password {

@@ -1,5 +1,5 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { Link, useSearchParams } from "@remix-run/react";
+import { Link, useRouteLoaderData, useSearchParams } from "@remix-run/react";
 import { useLoaderData } from "react-router";
 import { Input } from "~/components/ui/input";
 import { useEffect, useState } from "react";
@@ -82,14 +82,13 @@ export default function Index() {
   const {
     scans,
     userMangas,
-    loggedIn,
     recommendedManga,
   }: {
     scans: Scan[];
     userMangas: UserManga[];
-    loggedIn: boolean;
     recommendedManga: RecommendationManga[];
   } = useLoaderData() as any;
+  const isLoggedIn = useRouteLoaderData("root")?.user;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const filteredScans = scans.filter(
@@ -107,9 +106,17 @@ export default function Index() {
       value: tag,
     }))
   );
-  const progressions = userMangas.filter(
-    (manga) => manga.progress && manga.progress !== "{}" && !manga.finished
-  );
+  const progressions = userMangas
+    .filter(
+      (manga) => manga.progress && manga.progress !== "{}" && !manga.finished
+    )
+    .sort((a, b) => {
+      //sort by lastRead DateTime
+      const lastReadA = new Date(a.lastReadAt).getTime();
+      const lastReadB = new Date(b.lastReadAt).getTime();
+      console.log(a.mangaId, lastReadB - lastReadA);
+      return lastReadB - lastReadA;
+    });
   const favoriteMangas = userMangas.filter((manga) => manga.isFavorited);
   const watchlist = userMangas.filter((manga) => manga.isWatchlisted);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -121,22 +128,6 @@ export default function Index() {
   //console.log(selectedTags);
   return (
     <div className="p-5">
-      <div className="w-full flex justify-end">
-        {!loggedIn ? (
-          <div className="flex gap-2">
-            <Link to="/login">
-              <Button className="mb-5">Se connecter</Button>
-            </Link>
-            <Link to="/join">
-              <Button className="mb-5">S'inscrire</Button>
-            </Link>
-          </div>
-        ) : (
-          <Link to="/logout">
-            <Button className="mb-5">Se déconnecter</Button>
-          </Link>
-        )}
-      </div>
       <div className="justify-center flex">
         {progressions.length > 0 && (
           <div className="mb-5 w-2/3">
@@ -317,7 +308,7 @@ export default function Index() {
         )}
       </div>
       <div className="justify-center flex">
-        {loggedIn && recommendedManga.length > 0 && (
+        {isLoggedIn && recommendedManga.length > 0 && (
           <div className="mb-5 w-2/3">
             <h1 className="text-3xl font-bold mb-3 flex items-center justify-center gap-3">
               Recommandations{" "}

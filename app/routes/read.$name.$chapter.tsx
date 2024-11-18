@@ -247,6 +247,12 @@ export const action: ActionFunction = async ({ request, params }) => {
           id: userManga.id,
         },
         data: {
+          ...([null, undefined, "{}"].includes(progressData)
+            ? {
+                startedAt: new Date(),
+              }
+            : {}),
+          lastReadAt: new Date(),
           progress: JSON.stringify(newProgress),
         },
       });
@@ -307,10 +313,12 @@ export default function Read() {
   const mangaProvider = useProvider(data.provider);
   const [isFavorited, setIsFavorited] = useState(data.isFavorited);
   const [isWatchlisted, setIsWatchlisted] = useState(data.isWatchlisted);
-  const [currentChapter, setCurrentChapter] = useState(data.chapterNumber);
+  const [currentChapter, setCurrentChapter] = useState(
+    parseInt(data.chapterNumber)
+  );
   useEffect(() => {
     if (data.page) {
-      setCurrentChapter(data.chapterNumber);
+      setCurrentChapter(parseInt(data.chapterNumber));
     }
   }, []);
 
@@ -332,16 +340,13 @@ export default function Read() {
       (!options.includes("favorite") && isFavorited) ||
       (!options.includes("watchlist") && isWatchlisted)
     ) {
-      const res = await submit(
-        `/read/${data.mangaName}/${data.chapterNumber}`,
-        {
-          action: Action.SetOptions,
-          isFavorited: options.includes("favorite") ? "true" : "false",
-          isWatchlisted: options.includes("watchlist") ? "true" : "false",
-          currentlyFavorited: isFavorited ? "true" : "false",
-          currentlyWatchlisted: isWatchlisted ? "true" : "false",
-        }
-      );
+      const res = await submit(`/read/${data.mangaName}/${currentChapter}`, {
+        action: Action.SetOptions,
+        isFavorited: options.includes("favorite") ? "true" : "false",
+        isWatchlisted: options.includes("watchlist") ? "true" : "false",
+        currentlyFavorited: isFavorited ? "true" : "false",
+        currentlyWatchlisted: isWatchlisted ? "true" : "false",
+      });
       if (res.status === 200) {
         setIsFavorited(options.includes("favorite"));
         setIsWatchlisted(options.includes("watchlist"));
@@ -354,9 +359,9 @@ export default function Read() {
     if (!elId || !elId.includes("page-")) return;
     const page = parseInt(elId.split("-")[1]);
     const totalPages = data.pagesAmount;
-    const chapter = parseInt(data.chapterNumber);
+    const chapter = currentChapter;
     await submit(
-      `/read/${data.mangaName}/${data.chapterNumber}`,
+      `/read/${data.mangaName}/${currentChapter}`,
       {
         action: Action.SetProgress,
         progress: JSON.stringify({ page, totalPages, chapter }),
@@ -418,7 +423,7 @@ export default function Read() {
 
   async function finish() {
     if (data.isConnected) {
-      await submit(`/read/${data.mangaName}/${data.chapterNumber}`, {
+      await submit(`/read/${data.mangaName}/${currentChapter}`, {
         action: Action.FinishManga,
       });
     }
@@ -473,7 +478,7 @@ export default function Read() {
   useEffect(() => {
     if (window) {
       window.addEventListener("beforeunload", (e) => {
-        submit(`/read/${data.mangaName}/${data.chapterNumber}`, {});
+        submit(`/read/${data.mangaName}/${currentChapter}`, {});
       });
     }
   }, []);
@@ -529,7 +534,7 @@ export default function Read() {
                 <DropdownMenuItem
                   onClick={() => {
                     navigate(`/read/${data.mangaName}/latest`);
-                    revalidate();
+                    setCurrentChapter(data.chaptersAmount);
                   }}
                 >
                   <ArrowUpToLine />
@@ -560,13 +565,11 @@ export default function Read() {
           size={floaterSize}
           onValueChange={(vals) => {
             if (vals.includes("previous")) {
-              navigate(
-                `/read/${data.mangaName}/${parseInt(data.chapterNumber) - 1}`
-              );
+              navigate(`/read/${data.mangaName}/${currentChapter - 1}`);
+              setCurrentChapter(currentChapter - 1);
             } else if (vals.includes("next")) {
-              navigate(
-                `/read/${data.mangaName}/${parseInt(data.chapterNumber) + 1}`
-              );
+              navigate(`/read/${data.mangaName}/${currentChapter + 1}`);
+              setCurrentChapter(currentChapter + 1);
             }
           }}
           value={[]}
@@ -574,28 +577,38 @@ export default function Read() {
           <ToggleGroupItem
             value="previous"
             className="w-full"
-            disabled={parseInt(data.chapterNumber) <= 1}
+            disabled={currentChapter <= 1}
           >
             <ArrowLeft />
           </ToggleGroupItem>
           <ToggleGroupItem
             value="next"
             className="w-full"
-            disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
+            disabled={currentChapter >= data.chaptersAmount}
           >
             <ArrowRight />
           </ToggleGroupItem>
         </ToggleGroup>
         <Separator />
-        <Select onValueChange={(val) => navigate(val)}>
+        <Select
+          onValueChange={(val) => {
+            const num = parseInt(val);
+            navigate(`/read/${data.mangaName}/${num}`);
+            setCurrentChapter(num);
+          }}
+        >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={"Chapitre " + data.chapterNumber} />
+            <SelectValue
+              placeholder={
+                "Chapitre " + currentChapter // + "/" + data.chaptersAmount
+              }
+            />
           </SelectTrigger>
           <SelectContent>
             {Array(data.chaptersAmount)
               .fill(0)
               .map((_, i) => (
-                <SelectItem key={i} value={`/read/${data.mangaName}/${i + 1}`}>
+                <SelectItem key={i} value={(i + 1).toString()}>
                   Chapitre {i + 1}
                 </SelectItem>
               ))}
@@ -630,35 +643,25 @@ export default function Read() {
             invertedControls ? "flex-row-reverse" : "flex-row"
           } gap-2 justify-center my-4 w-full lg:w-1/2 mx-3 lg:mx-0`}
         >
-          {parseInt(data.chapterNumber) < data.chaptersAmount ? (
+          {currentChapter < data.chaptersAmount ? (
             <>
               <Button
-                disabled={parseInt(data.chapterNumber) <= 1}
-                onClick={() =>
-                  navigate(
-                    `/read/${data.mangaName}/${
-                      parseInt(data.chapterNumber) - 1
-                    }`
-                  )
-                }
-                className={parseInt(data.chapterNumber) > 1 ? "w-full" : ""}
+                disabled={currentChapter <= 1}
+                onClick={() => {
+                  navigate(`/read/${data.mangaName}/${currentChapter - 1}`);
+                  setCurrentChapter(currentChapter - 1);
+                }}
+                className={currentChapter > 1 ? "w-full" : ""}
               >
                 Précédent
               </Button>
               <Button
-                disabled={parseInt(data.chapterNumber) >= data.chaptersAmount}
-                onClick={() =>
-                  navigate(
-                    `/read/${data.mangaName}/${
-                      parseInt(data.chapterNumber) + 1
-                    }`
-                  )
-                }
-                className={
-                  parseInt(data.chapterNumber) < data.chaptersAmount
-                    ? "w-full"
-                    : ""
-                }
+                disabled={currentChapter >= data.chaptersAmount}
+                onClick={() => {
+                  navigate(`/read/${data.mangaName}/${currentChapter + 1}`);
+                  setCurrentChapter(currentChapter + 1);
+                }}
+                className={currentChapter < data.chaptersAmount ? "w-full" : ""}
               >
                 Suivant
               </Button>

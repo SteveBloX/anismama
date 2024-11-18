@@ -6,7 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/root.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/library.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/library.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,28 +51,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;C:\\Users\\lilian\\Documents\\Code\\anismama\\node_modules\\prettier&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\lilian\\Documents\\Code\\anismama\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "prettierjs.PrettierConfiguration.Package": "C:\\Users\\lilian\\Documents\\Code\\anismama\\node_modules\\prettier",
+    "settings.editor.selected.configurable": "Errors",
+    "ts.external.directory.path": "C:\\Users\\User\\WebstormProjects\\anismama\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.23726.96" />
+        <option value="bundled-js-predefined-d6986cc7102b-410509235cf1-JavaScript-WS-242.20224.342" />
       </set>
     </attachedChunks>
   </component>
@@ -91,10 +98,14 @@
       <workItem from="1728197340773" duration="2006000" />
       <workItem from="1728317550488" duration="3993000" />
       <workItem from="1730023317291" duration="47000" />
-      <workItem from="1730023395081" duration="22192000" />
-      <workItem from="1730206992504" duration="297000" />
-      <workItem from="1730808194230" duration="2835000" />
-      <workItem from="1731057290174" duration="1503000" />
+      <workItem from="1730023395081" duration="21961000" />
+      <workItem from="1730453558924" duration="42000" />
+      <workItem from="1730625379420" duration="79000" />
+      <workItem from="1731783256663" duration="2575000" />
+      <workItem from="1731843814003" duration="7000" />
+      <workItem from="1731872959581" duration="1338000" />
+      <workItem from="1731874337336" duration="876000" />
+      <workItem from="1731954675372" duration="7443000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />

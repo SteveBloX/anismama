@@ -1,14 +1,20 @@
 import {
+  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  useMatches,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 
 import tailwind from "~/tailwind.css?url";
 import globalStyles from "~/styles/global.css?url";
+import { getUser, getUserId } from "~/session.server";
+import { Button } from "~/components/ui/button";
+import Navbar from "~/components/navbar";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,6 +31,11 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: globalStyles },
   { rel: "icon", href: "/anismama.png", type: "image/png" },
 ];
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getUser(request);
+  return { user };
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -45,5 +56,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
 }

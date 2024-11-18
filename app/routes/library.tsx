@@ -134,7 +134,6 @@ export default function Library() {
   const [searchTerm, setSearchTerm] = useState("");
   return (
     <>
-      <Navbar items={[{ title: "Accueil", link: "/" }]} />
       <div className="p-4">
         <h1 className="text-3xl mb-2 md:lg-0">Bibiliothèque</h1>
         <div className="flex flex-col gap-2 justify-center w-full">

@@ -44,13 +44,15 @@ import {
   CarouselPrevious,
 } from "~/components/ui/carousel";
 import { ResponsiveDialog } from "~/components/reponsive-dialog";
-import { useRevalidator } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import Navbar from "~/components/navbar";
 import useProvider, { Providers } from "~/providers/lib";
 import createManga from "~/createManga";
 import Rating from "~/components/rating";
 import { useColor } from "color-thief-react";
+import { formatDistance, formatRelative } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -317,6 +319,7 @@ export default function MangaDetails() {
   const progress = JSON.parse(data.userManga?.progress || "{}");
   const [restartDialogOpen, setRestartDialogOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 640px)");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (data.userManga) {
@@ -366,14 +369,16 @@ export default function MangaDetails() {
       ...(watchlist ? ["watchlist"] : []),
     ]);
   }
-  async function reset() {
+  async function reset(redirect: boolean = false) {
     const res = await submit(`/manga/${data.id}`, {
       action: Actions.ResetProgression,
       id: data.id,
     });
     if (res.status === 200) {
       setRestartDialogOpen(false);
-      revalidator.revalidate();
+      if (redirect) {
+        navigate(`/read/${data.id}/1`);
+      }
     }
   }
 
@@ -411,7 +416,6 @@ export default function MangaDetails() {
   const mainColor = colorData.data || "#ffffff00";
   return (
     <>
-      <Navbar items={[{ title: "Accueil", link: "/" }]} />
       <div className="flex justify-center w-[100vw] mt-10">
         <div className="w-full lg:w-1/2 3xl:w-1/3 lg:-ml-36">
           <div className="flex gap-2 flex-col lg:flex-row mx-4 lg:mx-0">
@@ -529,9 +533,34 @@ export default function MangaDetails() {
           <div className="mx-4 lg:mx-0">
             <h3 className="text-lg font-bold">Résumé</h3>
             <p className="mt-1">{data.synopsis}</p>
-            {data.userManga && timesFinished > 0 && (
+
+            {data.userManga && (
               <span className="italic text-gray-400 mt-1">
-                Lu {timesFinished} fois
+                {!data.userManga.finished &&
+                  data.userManga.startedAt &&
+                  ![undefined, null, "{}"].includes(
+                    data.userManga.progress
+                  ) && (
+                    <p>
+                      Commencé{" "}
+                      <span
+                        title={formatRelative(
+                          new Date(data.userManga.startedAt),
+                          new Date(),
+                          { locale: fr }
+                        )}
+                      >
+                        {formatDistance(
+                          new Date(data.userManga.startedAt),
+                          new Date(),
+                          { locale: fr, addSuffix: true }
+                        )}
+                      </span>
+                    </p>
+                  )}
+                {data.userManga.timesFinished > 0 && (
+                  <p>Lu {timesFinished} fois</p>
+                )}
               </span>
             )}
           </div>
@@ -604,7 +633,7 @@ export default function MangaDetails() {
             setNewProgress(progress);
           }}
         >
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 max-h-[75vh] overflow-y-auto">
             {Object.entries(newProgress).length > 0 ? (
               Object.entries(newProgress).map((chapter) => {
                 const chapterNum = chapter[0];
@@ -644,7 +673,7 @@ export default function MangaDetails() {
           danger
           description=""
           submitText="Recommencer"
-          onSubmit={reset}
+          onSubmit={() => reset(true)}
           title="Recommencer le manga"
           open={restartDialogOpen}
           setOpen={setRestartDialogOpen}
