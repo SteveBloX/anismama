@@ -53,6 +53,7 @@ import Rating from "~/components/rating";
 import { useColor } from "color-thief-react";
 import { formatDistance, formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
+import { IndexManga } from "~/types";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -414,6 +415,19 @@ export default function MangaDetails() {
     crossOrigin: "anonymous",
   });
   const mainColor = colorData.data || "#ffffff00";
+  const [similarMangas, setSimilarMangas] = useState([]);
+  useEffect(() => {
+    const getSimilarMangas = async () => {
+      const res = await submit("/api/recommendbytags", {
+        tags: data.tags.join(","),
+        mangaId: data.id,
+      });
+      const resData = await res.json();
+      if (res.status !== 200) return;
+      setSimilarMangas(resData);
+    };
+    getSimilarMangas();
+  }, []);
   return (
     <>
       <div className="flex justify-center w-[100vw] mt-10">
@@ -577,6 +591,34 @@ export default function MangaDetails() {
               </CarouselContent>
               <CarouselPrevious /> <CarouselNext />
             </Carousel>
+          )}
+          {similarMangas && similarMangas.length > 0 && (
+            <>
+              <h3 className="text-lg font-bold">Mangas similaires</h3>
+              <Carousel className="mt-3 mx-4 lg:mx-0">
+                <CarouselContent>
+                  {similarMangas.map((manga: IndexManga) => (
+                    <CarouselItem
+                      key={manga.id}
+                      className="basis-1/2 md:basis-1/3 lg:basis-1/4"
+                    >
+                      <Link to={`/manga/${manga.id}`}>
+                        <div className="flex flex-col gap-1">
+                          <img
+                            src={manga.img}
+                            alt={manga.title}
+                            className="rounded-lg object-cover"
+                          />
+                          <span className="text-sm">{manga.title}</span>
+                        </div>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>{" "}
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </>
           )}
           <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
             <Input

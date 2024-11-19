@@ -266,6 +266,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         id: userManga.id,
       },
       data: {
+        startedAt: new Date(),
         finished: true,
         progress: JSON.stringify({
           ...JSON.parse(userManga.progress),

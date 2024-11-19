@@ -1,5 +1,5 @@
 import { Manga, UserManga } from "@prisma/client";
-import { MangaInfo } from "~/types";
+import { IndexManga, MangaInfo } from "~/types";
 
 type UserMangaWithTags = UserManga & { tags: string[] };
 
@@ -57,4 +57,21 @@ export function sortMangas(scoredMangas: MangaInfo[]): MangaInfo[] {
   return mangasWithScore
     .sort((a, b) => (b.score || 0) - (a.score || 0))
     .slice(0, 10);
+}
+
+export function recommendByTags(
+  allMangas: IndexManga[],
+  tags: string[]
+): IndexManga[] {
+  // attribuer un score à chaque manga en fonction des tags
+  const scoredMangas = allMangas.map((manga) => {
+    let score = 0;
+    manga.tags.forEach((tag) => {
+      if (tags.includes(tag)) {
+        score += 1;
+      }
+    });
+    return { ...manga, score };
+  });
+  return sortMangas(scoredMangas);
 }

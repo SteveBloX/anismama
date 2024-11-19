@@ -5,15 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
+      <change afterPath="$PROJECT_DIR$/app/components/stats.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/api.recommendbytags.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/dev.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/root.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/library.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/library.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/recommendation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/recommendation.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,8 +22,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
@@ -63,7 +62,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "prettierjs.PrettierConfiguration.Package": "C:\\Users\\lilian\\Documents\\Code\\anismama\\node_modules\\prettier",
+    "prettierjs.PrettierConfiguration.Package": "C:\\Users\\User\\WebstormProjects\\anismama\\node_modules\\prettier",
     "settings.editor.selected.configurable": "Errors",
     "ts.external.directory.path": "C:\\Users\\User\\WebstormProjects\\anismama\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
@@ -105,7 +104,8 @@
       <workItem from="1731843814003" duration="7000" />
       <workItem from="1731872959581" duration="1338000" />
       <workItem from="1731874337336" duration="876000" />
-      <workItem from="1731954675372" duration="7443000" />
+      <workItem from="1731954675372" duration="8417000" />
+      <workItem from="1732041858137" duration="3998000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />

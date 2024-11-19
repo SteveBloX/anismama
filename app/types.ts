@@ -4,6 +4,7 @@ export type MangaInfo = {
   synopsis: string;
   tags: string[];
   alternateNames: string[];
+  score?: number;
 };
 
 export type MangaChapters = {
