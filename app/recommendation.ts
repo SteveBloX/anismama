@@ -19,7 +19,7 @@ export function recommendMangas(
       score += 5;
     }
     if (manga.finished && manga.rating && manga.rating > 2) {
-      score += 3;
+      score += Math.pow(manga.timesFinished, manga.rating / 2.5);
     }
     if (manga.rating) {
       score += manga.rating * 2 - 5;

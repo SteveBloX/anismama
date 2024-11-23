@@ -6,7 +6,6 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const tags = (formData.get("tags") as unknown as string).split(",");
   const mangaId = formData.get("mangaId") as string;
-  console.log(tags);
   const allMangas = (await getAllMangas()).filter(
     (manga) => manga.id !== mangaId
   );

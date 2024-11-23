@@ -54,6 +54,7 @@ import { useColor } from "color-thief-react";
 import { formatDistance, formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
 import { IndexManga } from "~/types";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -119,8 +120,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
-export function shouldRevalidate() {
-  return false;
+export function shouldRevalidate({ nextUrl }) {
+  return !!nextUrl;
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -427,7 +428,7 @@ export default function MangaDetails() {
       setSimilarMangas(resData);
     };
     getSimilarMangas();
-  }, []);
+  }, [data.id]);
   return (
     <>
       <div className="flex justify-center w-[100vw] mt-10">
@@ -592,12 +593,11 @@ export default function MangaDetails() {
               <CarouselPrevious /> <CarouselNext />
             </Carousel>
           )}
-          {similarMangas && similarMangas.length > 0 && (
-            <>
-              <h3 className="text-lg font-bold">Mangas similaires</h3>
-              <Carousel className="mt-3 mx-4 lg:mx-0">
-                <CarouselContent>
-                  {similarMangas.map((manga: IndexManga) => (
+          <h3 className="text-lg font-bold mt-4">Mangas similaires</h3>
+          <Carousel className="mt-3 mx-4 lg:mx-0">
+            <CarouselContent>
+              {similarMangas && similarMangas.length > 0
+                ? similarMangas.map((manga: IndexManga) => (
                     <CarouselItem
                       key={manga.id}
                       className="basis-1/2 md:basis-1/3 lg:basis-1/4"
@@ -613,13 +613,21 @@ export default function MangaDetails() {
                         </div>
                       </Link>
                     </CarouselItem>
-                  ))}
-                </CarouselContent>{" "}
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            </>
-          )}
+                  ))
+                : Array(5)
+                    .fill(0)
+                    .map((_, i) => (
+                      <CarouselItem
+                        key={i}
+                        className="basis-1/2 md:basis-1/3 lg:basis-1/4"
+                      >
+                        <SimilarMangaSkeleton />
+                      </CarouselItem>
+                    ))}
+            </CarouselContent>{" "}
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
           <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
             <Input
               value={chaptersSearch}
@@ -726,5 +734,29 @@ export default function MangaDetails() {
         </ResponsiveDialog>
       </div>
     </>
+  );
+}
+
+function SimilarMangaSkeleton() {
+  const isDouble = Math.random() > 0.85;
+  const width = Math.floor(Math.random() * 40 + 60);
+  return (
+    <div className="flex flex-col gap-1">
+      <Skeleton className="h-32 rounded-lg" />
+      <Skeleton
+        className="h-4"
+        style={{
+          width: `${!isDouble ? width : 100}%`,
+        }}
+      />
+      {isDouble && (
+        <Skeleton
+          className="h-4"
+          style={{
+            width: `${width}%`,
+          }}
+        />
+      )}
+    </div>
   );
 }

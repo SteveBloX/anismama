@@ -23,3 +23,8 @@ export type IndexManga = {
   id: string;
   tags: string[];
 };
+
+export enum ROLE {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}

@@ -4,6 +4,7 @@ interface StatsProps {
   value: number;
   duration?: number; // Duration of animation in milliseconds
   easeOutExponent?: number; // Exponent of the easing function
+  startDelay?: number; // Delay before starting the animation (in ms)
 }
 
 const customEaseOut = (t: number, exponent: number): number =>
@@ -13,6 +14,7 @@ const AnimatedStats = ({
   value,
   duration = 2000,
   easeOutExponent = 6,
+  startDelay = 0,
   ...props
 }: StatsProps & {
   [key: string]: any;
@@ -23,6 +25,7 @@ const AnimatedStats = ({
     let start: number | null = null;
     const startValue = displayValue;
     const delta = value - startValue;
+    let animationFrame: number;
 
     const animate = (timestamp: number) => {
       if (!start) start = timestamp;
@@ -32,12 +35,21 @@ const AnimatedStats = ({
       setDisplayValue(startValue + delta * easedProgress); // Update display value
 
       if (progress < 1) {
-        requestAnimationFrame(animate); // Continue animation
+        animationFrame = requestAnimationFrame(animate); // Continue animation
       }
     };
 
-    requestAnimationFrame(animate);
-  }, [value, duration, easeOutExponent]);
+    const startAnimation = () => {
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    const delayTimeout = setTimeout(startAnimation, startDelay);
+
+    return () => {
+      clearTimeout(delayTimeout);
+      cancelAnimationFrame(animationFrame); // Cleanup on unmount
+    };
+  }, [value, duration, easeOutExponent, startDelay]);
 
   return <div {...props}>{Math.round(displayValue)}</div>;
 };

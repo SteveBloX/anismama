@@ -11,6 +11,7 @@ import {
   useMatches,
   useRouteLoaderData,
 } from "@remix-run/react";
+import { ROLE } from "~/types";
 
 const exceptions = ["routes/read.$name.$chapter"];
 
@@ -22,7 +23,13 @@ export default function Navbar() {
   if (exceptions.includes(match.id)) {
     return null;
   }
-  const items = [{ title: "Accueil", link: "/" }];
+  let items = [{ title: "Accueil", link: "/" }];
+  if (user) {
+    items.push({ title: "Ma bibliothèque", link: "/library" });
+  }
+  if (user && user.role === ROLE.ADMIN) {
+    items.push({ title: "Dashboard", link: "/dashboard" });
+  }
   return (
     <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6">
       <Sheet>
@@ -74,7 +81,7 @@ export default function Navbar() {
       </Link>*/}
       <NavigationMenu className="hidden lg:flex">
         <NavigationMenuList className="flex w-full items-center justify-between">
-          <div className="w-full">
+          <div className="w-full flex gap-3.5">
             {items.map((item) => (
               <Link to={item.link} key={item.link}>
                 {item.title}

@@ -23,6 +23,7 @@ model User {
 
   password   Password?
   userMangas UserManga[]
+  role       String      @default("USER")
 }
 
 model Manga {

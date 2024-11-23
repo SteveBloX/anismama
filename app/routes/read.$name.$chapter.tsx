@@ -52,6 +52,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import AnimatedStats from "~/components/stats";
+import { intervalToDuration } from "date-fns";
+import { MangaChapters } from "~/types";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -94,14 +97,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
           mangaId: params.name,
         },
       });
-  function getPagesAmount(
-    chaptersDetails: { number: number; pagesAmount: number }[]
-  ) {
-    return chaptersDetails.find(
-      (chap: { number: number; pagesAmount: number }) =>
-        chap.number === parseInt(params.chapter)
-    )?.pagesAmount;
-  }
   let prettyMangaName;
   let data;
   if (manga) {
@@ -113,7 +108,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
     data = {
       chaptersAmount: chaptersData.chaptersAmount,
-      pagesAmount: getPagesAmount(chaptersData.chaptersDetails),
       chaptersDetails: chaptersData.chaptersDetails,
     };
   } else {
@@ -121,7 +115,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const mangaData = await createManga(params.name);
     data = {
       ...mangaData,
-      pagesAmount: getPagesAmount(mangaData.chaptersDetails),
+      chaptersDetails: mangaData.chaptersDetails,
     };
     prettyMangaName = data.title;
     if (user && !userManga) {
@@ -161,6 +155,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isConnected: !!user,
     page,
     provider: manga?.provider || Providers.animeSama,
+    startedAt: userManga?.startedAt,
   });
 };
 
@@ -261,6 +256,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return new Response(null, { status: 200 });
   } else if (action === Action.FinishManga) {
     if (userManga.finished) return new Response(null, { status: 200 });
+    console.log("finish");
     await prisma.userManga.update({
       where: {
         id: userManga.id,
@@ -305,6 +301,8 @@ export default function Read() {
     isConnected: boolean;
     page?: number;
     provider: Providers;
+    startedAt?: Date;
+    chaptersDetails: MangaChapters["chaptersDetails"];
   } = useLoaderData();
   const navigate = useNavigate();
   const { revalidate } = useRevalidator();
@@ -360,7 +358,9 @@ export default function Read() {
   async function saveProgress(elId: string, keepAlive: boolean = false) {
     if (!elId || !elId.includes("page-")) return;
     const page = parseInt(elId.split("-")[1]);
-    const totalPages = data.pagesAmount;
+    const totalPages = data.chaptersDetails.find(
+      (c) => c.number === currentChapter
+    );
     const chapter = currentChapter;
     await submit(
       `/read/${data.mangaName}/${currentChapter}`,
@@ -485,7 +485,11 @@ export default function Read() {
     }
   }, []);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  console.log(currentChapter);
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  const timeSinceStart = intervalToDuration({
+    start: new Date(data.startedAt || new Date()),
+    end: new Date(),
+  });
   return (
     <div className="flex flex-col justify-center">
       <div
@@ -619,7 +623,10 @@ export default function Read() {
       </div>
       <div className="w-full px-2 lg:px-0 lg:flex justify-center">
         <div className="flex flex-col lg:w-1/2">
-          {Array(data.pagesAmount)
+          {Array(
+            data.chaptersDetails.find((c) => c.number === currentChapter)
+              ?.pagesAmount
+          )
             .fill(0)
             .map((_, i) => (
               <img
@@ -669,12 +676,16 @@ export default function Read() {
               </Button>
             </>
           ) : (
-            <Button onClick={finish} className="w-full">
+            <Button
+              onClick={() => setFinishDialogOpen(true)}
+              className="w-full"
+            >
               Terminer
             </Button>
           )}
         </div>
       </div>
+
       <ResponsiveDialog
         open={settingsDialogOpen}
         setOpen={setSettingsDialogOpen}
@@ -787,6 +798,50 @@ export default function Read() {
               Enregistrer sur l'appareil
             </label>
           </div>
+        </div>
+      </ResponsiveDialog>
+      <ResponsiveDialog
+        open={finishDialogOpen}
+        setOpen={setFinishDialogOpen}
+        cancelButtonHidden
+        submitText="Terminer"
+        onSubmit={finish}
+        title={"Terminer " + data.prettyMangaName}
+      >
+        <div className="grid grid-cols-3 grid-rows-1 gap-x-2">
+          {[
+            {
+              endText: "jours de lecture",
+              value: timeSinceStart.days,
+              delay: 500,
+              showCondition: !!timeSinceStart.days,
+            },
+            {
+              endText: "chapitres lus",
+              value: data.chaptersDetails.length,
+              delay: 1500,
+              showCondition: true,
+            },
+            {
+              endText: "chapitres / jour",
+              value: Math.floor(
+                data.chaptersDetails.length / timeSinceStart.days
+              ),
+              delay: 3000,
+              showCondition: !!timeSinceStart.days,
+            },
+          ]
+            .filter((el) => el.showCondition)
+            .map((el) => (
+              <div className="flex flex-col justify-center gap-1 bg-gray-100 rounded-lg p-2">
+                <AnimatedStats
+                  value={el.value}
+                  startDelay={el.delay}
+                  className="text-5xl flex justify-center"
+                />
+                <span className="text-center">{el.endText}</span>
+              </div>
+            ))}
         </div>
       </ResponsiveDialog>
     </div>

@@ -258,7 +258,7 @@ export default function Index() {
           </div>
         )}
       </div>
-      <div className="justify-center flex">
+      {/*<div className="justify-center flex">
         {watchlist.length > 0 && (
           <div className="mb-5 w-2/3">
             <Link
@@ -306,15 +306,12 @@ export default function Index() {
             </Carousel>
           </div>
         )}
-      </div>
+      </div>*/}
       <div className="justify-center flex">
         {isLoggedIn && recommendedManga.length > 0 && (
           <div className="mb-5 w-2/3">
             <h1 className="text-3xl font-bold mb-3 flex items-center justify-center gap-3">
-              Recommandations{" "}
-              <span className="py-1 px-2 bg-green-200 text-sm rounded-md mt-0.5">
-                BETA
-              </span>
+              Recommandations
             </h1>
             <Carousel className="">
               <CarouselContent className="mb-5">
