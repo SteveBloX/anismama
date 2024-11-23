@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
-      <change afterPath="$PROJECT_DIR$/app/routes/dashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/stats.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/stats.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/recommendation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/recommendation.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/_index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/_index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/api.recommendbytags.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/api.recommendbytags.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
-    </list>
+    <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -109,7 +97,7 @@
       <workItem from="1731874337336" duration="876000" />
       <workItem from="1731954675372" duration="8417000" />
       <workItem from="1732041858137" duration="7583000" />
-      <workItem from="1732390630945" duration="6311000" />
+      <workItem from="1732390630945" duration="6537000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />
