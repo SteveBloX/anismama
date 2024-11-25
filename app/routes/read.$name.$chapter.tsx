@@ -144,7 +144,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       page = pageData.currentPage;
     }
   }
-
   return json({
     mangaName: params.name,
     chapterNumber: params.chapter,
@@ -490,6 +489,14 @@ export default function Read() {
     start: new Date(data.startedAt || new Date()),
     end: new Date(),
   });
+  const [totalMangaPages, setTotalMangaPages] = useState(0);
+  function getTotalMangaPages() {
+    const total = data.chaptersDetails.reduce(
+      (acc, curr) => acc + curr.pagesAmount,
+      0
+    );
+    setTotalMangaPages(total);
+  }
   return (
     <div className="flex flex-col justify-center">
       <div
@@ -677,7 +684,10 @@ export default function Read() {
             </>
           ) : (
             <Button
-              onClick={() => setFinishDialogOpen(true)}
+              onClick={() => {
+                getTotalMangaPages();
+                setFinishDialogOpen(true);
+              }}
               className="w-full"
             >
               Terminer
@@ -808,7 +818,7 @@ export default function Read() {
         onSubmit={finish}
         title={"Terminer " + data.prettyMangaName}
       >
-        <div className="grid grid-cols-3 grid-rows-1 gap-x-2">
+        <div className="grid grid-cols-3 gap-x-2">
           {[
             {
               endText: "jours de lecture",
@@ -828,6 +838,33 @@ export default function Read() {
                 data.chaptersDetails.length / timeSinceStart.days
               ),
               delay: 3000,
+              showCondition: !!timeSinceStart.days,
+            },
+          ]
+            .filter((el) => el.showCondition)
+            .map((el) => (
+              <div className="flex flex-col justify-center gap-1 bg-gray-100 rounded-lg p-2">
+                <AnimatedStats
+                  value={el.value}
+                  startDelay={el.delay}
+                  className="text-5xl flex justify-center"
+                />
+                <span className="text-center">{el.endText}</span>
+              </div>
+            ))}
+        </div>
+        <div className="grid grid-cols-2 gap-x-2 -mt-2">
+          {[
+            {
+              endText: "pages lues",
+              value: totalMangaPages,
+              delay: 4500,
+              showCondition: true,
+            },
+            {
+              endText: "pages / jour",
+              value: Math.floor(totalMangaPages / timeSinceStart.days),
+              delay: 6000,
               showCondition: !!timeSinceStart.days,
             },
           ]

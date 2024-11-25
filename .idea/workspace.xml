@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix" />
+    <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
+      <change afterPath="$PROJECT_DIR$/app/routes/api.search.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/random.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/navbar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/hooks/useDebounce.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/hooks/useDebounce.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/providers/anime-sama.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/anime-sama.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/providers/lib.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/lib.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/manga.$name.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/manga.$name.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/types.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -98,6 +109,10 @@
       <workItem from="1731954675372" duration="8417000" />
       <workItem from="1732041858137" duration="7583000" />
       <workItem from="1732390630945" duration="6537000" />
+      <workItem from="1732401423774" duration="28000" />
+      <workItem from="1732475640361" duration="5447000" />
+      <workItem from="1732557022158" duration="2522000" />
+      <workItem from="1732562379131" duration="7436000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />

@@ -16,11 +16,12 @@ export type Provider = {
       chapters?: boolean;
     }
   ) => Promise<MangaInfo & MangaChapters>;
-  getPageUrl?: (
+  getPageUrl: (
     id: string,
     chapterNum: string | number,
     pageNum: string | number
   ) => string;
+  searchManga: (query: string) => Promise<IndexManga[]>;
 };
 
 export default function useProvider(name: Providers) {

@@ -21,7 +21,7 @@ export type IndexManga = {
   img: string;
   alias: string;
   id: string;
-  tags: string[];
+  tags?: string[];
 };
 
 export enum ROLE {

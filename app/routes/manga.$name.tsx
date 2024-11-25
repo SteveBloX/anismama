@@ -80,6 +80,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     prov = manga.provider as Providers;
   }
   const provider = useProvider(prov);
+  await provider.searchManga("slime");
   /*const variants = root.querySelectorAll("h2").find((el) => el.text === "Manga")
     ?.nextElementSibling?.innerHTML;
   .map((el) => {});
@@ -593,7 +594,9 @@ export default function MangaDetails() {
               <CarouselPrevious /> <CarouselNext />
             </Carousel>
           )}
-          <h3 className="text-lg font-bold mt-4">Mangas similaires</h3>
+          <h3 className="text-lg font-bold mt-4 mx-4 lg:mx-0">
+            Mangas similaires
+          </h3>
           <Carousel className="mt-3 mx-4 lg:mx-0">
             <CarouselContent>
               {similarMangas && similarMangas.length > 0

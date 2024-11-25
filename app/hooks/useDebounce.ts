@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 function useDebounce(
   value: string,
   delay: number,
-  callback: (value: string) => void
+  callback: (value: string) => void = (_) => _
 ) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

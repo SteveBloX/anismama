@@ -1,6 +1,7 @@
 import { parse } from "node-html-parser";
 import { Provider } from "~/providers/lib";
 import { IndexManga, MangaChapters, MangaInfo } from "~/types";
+import { submit } from "~/utils";
 
 async function getAllMangas(): Promise<IndexManga[]> {
   const res = await fetch("https://anime-sama.fr/catalogue/listing_all.php");
@@ -61,7 +62,7 @@ async function getManga(
     );
     console.log("Request status", chaptersRes.status);
     const chaptersText = await chaptersRes.text();
-    const chapters = chaptersText.match(/eps[0-9]+=/gm);
+    const chapters = chaptersText.match(/eps[0-9]+ ?=/gm);
     chaptersDetails = chapters
       ?.map((ch, i) => {
         const num = i + 1;
@@ -72,10 +73,20 @@ async function getManga(
               .length - 1;
         } catch (e) {
           try {
-            pagesAmount = parseInt(
-              chaptersText.split(`eps${num}.length = `)[1].split(";")[0]
-            );
-          } catch (e) {}
+            pagesAmount =
+              chaptersText
+                .split(`var eps${num} = [`)[1]
+                .split("];")[0]
+                .split(",").length - 1;
+          } catch {
+            try {
+              pagesAmount = parseInt(
+                chaptersText.split(`eps${num}.length = `)[1].split(";")[0]
+              );
+            } catch (e) {
+              console.log("Error", e);
+            }
+          }
         }
         return {
           number: num,
@@ -102,9 +113,32 @@ function getPageUrl(
   return `https://anime-sama.fr/s2/scans/${id}/${chapterNum}/${pageNum}.jpg`;
 }
 
+async function searchManga(query: string): Promise<IndexManga[]> {
+  const res = await submit(
+    "https://anime-sama.fr/template-php/defaut/fetch.php",
+    {
+      query,
+    }
+  );
+  const text = await res.text();
+  const root = parse(text.split("<script")[0]);
+  // mangas are <a> elements
+  const scanEls = root.querySelectorAll("a");
+  const scans: IndexManga[] = scanEls.map((el) => {
+    const title = el.querySelector("h3")?.innerText;
+    const link = el.getAttribute("href");
+    const img = el.querySelector("img")?.getAttribute("src");
+    const alias = el.querySelector("p")?.text.split(", ");
+    const id = link?.split("catalogue/")[1].split("/")[0];
+    return { title, link, img, alias, id };
+  });
+  return scans;
+}
+
 const provider: Provider = {
   getAllMangas,
   getManga,
   getPageUrl,
+  searchManga,
 };
 export default provider;
