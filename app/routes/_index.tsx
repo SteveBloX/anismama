@@ -140,7 +140,12 @@ export default function Index() {
                 <ArrowUpRight />
               </button>
             </Link>
-            <Carousel className="">
+            <Carousel
+              opts={{
+                dragFree: true,
+              }}
+              className=""
+            >
               <CarouselContent className="mb-5">
                 {progressions.map((manga) => {
                   const progress = JSON.parse(manga.progress) as {
@@ -161,7 +166,7 @@ export default function Index() {
                   return (
                     <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                       <Link
-                        className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
+                        className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
                         to={`/read/${manga.mangaId}/${lastChapterNum}`}
                       >
                         <div>
@@ -221,12 +226,17 @@ export default function Index() {
                 <ArrowUpRight />
               </button>
             </Link>
-            <Carousel className="">
+            <Carousel
+              opts={{
+                dragFree: true,
+              }}
+              className=""
+            >
               <CarouselContent className="mb-5">
                 {favoriteMangas.map((manga) => (
                   <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                     <Link
-                      className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
+                      className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
                       to={`/manga/${manga.mangaId}`}
                     >
                       <div>
@@ -313,12 +323,17 @@ export default function Index() {
             <h1 className="text-3xl font-bold mb-3 flex items-center justify-center gap-3">
               Recommandations
             </h1>
-            <Carousel className="">
+            <Carousel
+              opts={{
+                dragFree: true,
+              }}
+              className=""
+            >
               <CarouselContent className="mb-5">
                 {recommendedManga.map((manga, i) => (
                   <CarouselItem className={`md:basis-1/2 lg:basis-1/3`}>
                     <Link
-                      className="p-2 border-gray-100 border rounded-lg shadow-lg flex flex-col justify-between"
+                      className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
                       to={`/manga/${manga.id}`}
                     >
                       <div>
@@ -348,7 +363,7 @@ export default function Index() {
           <div className="flex justify-center flex-col lg:flex-row mb-3 lg:mb-5 gap-1 lg:w-1/2">
             <Input
               placeholder="Rechercher"
-              className="shadow-none lg:shadow-lg lg:w-2/3 p-5"
+              className="shadow-none lg:shadow-lg lg:w-2/3 p-5 text-md md:text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -366,7 +381,7 @@ export default function Index() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
           {filteredScans.map((manga, i) => (
             <Link to={`/manga/${manga.id}`} key={i}>
-              <div className="p-2 border-gray-100 border rounded-lg shadow-lg">
+              <div className="p-2 border-gray-100 border rounded-lg shadow-sm">
                 <img
                   src={manga.img}
                   alt={manga.title}

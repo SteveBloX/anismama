@@ -23,6 +23,9 @@ export const loader: LoaderFunction = async ({ request }) => {
     include: {
       manga: true,
     },
+    orderBy: {
+      updatedAt: "desc",
+    },
   });
   console.log("Fetching all mangas");
   const mangas = await getAllMangas();
@@ -121,10 +124,18 @@ export default function Library() {
   const favoriteMangas = userMangas.filter(
     (manga) => manga && manga.isFavorited
   );
-  const readingMangas = userMangas.filter(
-    (manga) =>
-      manga && !manga.finished && manga.progress && manga.progress !== "{}"
-  );
+  const readingMangas = userMangas
+    .filter(
+      (manga) =>
+        manga && !manga.finished && manga.progress && manga.progress !== "{}"
+    )
+    .sort((a, b) => {
+      //sort by lastRead DateTime
+      const lastReadA = new Date(a.lastReadAt).getTime();
+      const lastReadB = new Date(b.lastReadAt).getTime();
+      console.log(a.mangaId, lastReadB - lastReadA);
+      return lastReadB - lastReadA;
+    });
   const watchlistMangas = userMangas.filter(
     (manga) => manga && manga.isWatchlisted
   );

@@ -94,6 +94,10 @@ export default function Navbar() {
   if (exceptions.includes(match.id)) {
     return null;
   }
+  function onMangaNavigate() {
+    setIsAutocompleteOpen(false);
+    setIsSheetOpen(false);
+  }
   return (
     <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -288,8 +292,7 @@ export default function Navbar() {
               if (e.key === "Enter") {
                 if (searchResults.length > 0) {
                   navigate(`/manga/${searchResults[0].id}`);
-                  setIsAutocompleteOpen(false);
-                  setSearchQuery("");
+                  onMangaNavigate();
                 }
               }
             }}
@@ -301,6 +304,7 @@ export default function Navbar() {
                 <Link
                   key={result.id}
                   to={`/manga/${result.id}`}
+                  onClick={onMangaNavigate}
                   className="flex gap-3 hover:bg-gray-100 duration-100 p-2 rounded-md"
                 >
                   <img

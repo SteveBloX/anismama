@@ -581,7 +581,12 @@ export default function MangaDetails() {
             )}
           </div>
           {data.tags.length > 0 && (
-            <Carousel className="mt-3 select-none mx-4 lg:mx-0">
+            <Carousel
+              opts={{
+                dragFree: true,
+              }}
+              className="mt-3 select-none mx-4 lg:mx-0"
+            >
               <CarouselContent className="">
                 {data.tags.map((tag) => (
                   <CarouselItem className="basis-1/8">
