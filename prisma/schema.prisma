@@ -56,6 +56,7 @@ model UserManga {
   isCrushed     Boolean   @default(false)
   startedAt     DateTime?
   lastReadAt    DateTime?
+  note          String?
 }
 
 model Password {

@@ -55,6 +55,7 @@ import { formatDistance, formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
 import { IndexManga } from "~/types";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Textarea } from "~/components/ui/textarea";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -251,6 +252,50 @@ export const action: ActionFunction = async ({ request }) => {
         },
       });
       break;
+    case Actions.SetNote:
+      const note = data.get("note") as string;
+      const NuserManga = await prisma.userManga.findFirst({
+        where: {
+          userId: user.id,
+          mangaId,
+        },
+        select: {
+          id: true,
+          manga: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+      if (!NuserManga) {
+        const manga = await prisma.manga.findFirst({
+          where: {
+            mangaId,
+          },
+        });
+        if (!manga) {
+          const NnewManga = await createManga(mangaId);
+        }
+        await prisma.userManga.create({
+          data: {
+            userId: user.id,
+            mangaId,
+            note,
+          },
+        });
+        break;
+      }
+      await prisma.userManga.updateMany({
+        where: {
+          userId: user.id,
+          mangaId,
+        },
+        data: {
+          note,
+        },
+      });
+      break;
   }
   return null;
 };
@@ -260,6 +305,7 @@ enum Actions {
   ResetProgression = "resetProgression",
   EditHistory = "editHistory",
   SetRating = "setRating",
+  SetNote = "setNote",
 }
 const toggleGroupActions = [
   {
@@ -430,6 +476,10 @@ export default function MangaDetails() {
     };
     getSimilarMangas();
   }, [data.id]);
+  const [note, setNote] = useState(data.userManga?.note || "");
+  useEffect(() => {
+    setNote(data.userManga?.note || "");
+  }, []);
   return (
     <>
       <div className="flex justify-center w-[100vw] mt-10">
@@ -636,6 +686,30 @@ export default function MangaDetails() {
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
+          {data.isLoggedIn && (
+            <>
+              <h3 className="text-lg font-bold mt-4 mx-4 lg:mx-0 mb-3">
+                Note personnelle
+              </h3>
+              <Textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder={"Note personnelle..."}
+                className="mb-2"
+              />
+              <Button
+                onClick={async () => {
+                  await submit(`/manga/${data.id}`, {
+                    action: Actions.SetNote,
+                    id: data.id,
+                    note,
+                  });
+                }}
+              >
+                Enregistrer
+              </Button>
+            </>
+          )}
           <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
             <Input
               value={chaptersSearch}
