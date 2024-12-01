@@ -577,7 +577,7 @@ export default function MangaDetails() {
             <h3 className="text-lg font-bold">Note</h3>
             <div className="flex items-center gap-2">
               <Rating
-                rating={data.isLoggedIn ? rating : data.avgRating}
+                rating={data.avgRating}
                 setRating={updateRating}
                 disabled={!data.isLoggedIn}
               />{" "}
@@ -687,10 +687,8 @@ export default function MangaDetails() {
             <CarouselNext />
           </Carousel>
           {data.isLoggedIn && (
-            <>
-              <h3 className="text-lg font-bold mt-4 mx-4 lg:mx-0 mb-3">
-                Note personnelle
-              </h3>
+            <div className={"mx-4 lg:mx-0"}>
+              <h3 className="text-lg font-bold mt-4 mb-3">Note personnelle</h3>
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -708,7 +706,7 @@ export default function MangaDetails() {
               >
                 Enregistrer
               </Button>
-            </>
+            </div>
           )}
           <div className="w-full rounded-lg py-2 mt-5 px-4 lg:px-0">
             <Input

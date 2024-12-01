@@ -19,6 +19,7 @@ import { UserManga } from "@prisma/client";
 import { RecommendationManga, recommendMangas } from "~/recommendation";
 import useProvider, { getAllMangas, Providers } from "~/providers/lib";
 import { ArrowUpRight } from "lucide-react";
+import MangaSearchDialog from "~/components/mangaSearchDialog";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Anismama" }, { name: "description", content: "Anismama!" }];
@@ -125,11 +126,11 @@ export default function Index() {
     if (!tags) return;
     setSelectedTags(tags.split("+"));
   }, []);
-  //console.log(selectedTags);
+  const [isMangaSearchOpen, setIsMangaSearchOpen] = useState(false);
   return (
     <div className="p-5">
       <div className="justify-center flex">
-        {progressions.length > 0 && (
+        {isLoggedIn && (
           <div className="mb-5 w-2/3">
             <Link
               to="/library?tab=reading"
@@ -140,82 +141,93 @@ export default function Index() {
                 <ArrowUpRight />
               </button>
             </Link>
-            <Carousel
-              opts={{
-                dragFree: true,
-              }}
-              className=""
-            >
-              <CarouselContent className="mb-5">
-                {progressions.map((manga) => {
-                  const progress = JSON.parse(manga.progress) as {
-                    [chapterNum: string]: {
-                      currentPage: number;
-                      totalPages: number;
+            {progressions.length > 0 ? (
+              <Carousel
+                opts={{
+                  dragFree: true,
+                }}
+                className=""
+              >
+                <CarouselContent className="mb-5">
+                  {progressions.map((manga) => {
+                    const progress = JSON.parse(manga.progress) as {
+                      [chapterNum: string]: {
+                        currentPage: number;
+                        totalPages: number;
+                      };
                     };
-                  };
-                  const lastChapter = Object.keys(progress)
-                    .sort((a, b) => parseInt(a) - parseInt(b))
-                    .pop();
-                  const progressPercentage = `${
-                    ((progress[lastChapter].currentPage + 1) /
-                      progress[lastChapter].totalPages) *
-                    100
-                  }%`;
-                  const lastChapterNum = parseInt(lastChapter);
-                  return (
-                    <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                      <Link
-                        className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
-                        to={`/read/${manga.mangaId}/${lastChapterNum}`}
-                      >
-                        <div>
-                          <div className="relative rounded-lg overflow-hidden">
-                            <img
-                              src={
-                                scans.find((scan) => scan.id === manga.mangaId)
-                                  ?.img
-                              }
-                              alt={
+                    const lastChapter = Object.keys(progress)
+                      .sort((a, b) => parseInt(a) - parseInt(b))
+                      .pop();
+                    const progressPercentage = `${
+                      ((progress[lastChapter].currentPage + 1) /
+                        progress[lastChapter].totalPages) *
+                      100
+                    }%`;
+                    const lastChapterNum = parseInt(lastChapter);
+                    return (
+                      <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                        <Link
+                          className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
+                          to={`/read/${manga.mangaId}/${lastChapterNum}`}
+                        >
+                          <div>
+                            <div className="relative rounded-lg overflow-hidden">
+                              <img
+                                src={
+                                  scans.find(
+                                    (scan) => scan.id === manga.mangaId
+                                  )?.img
+                                }
+                                alt={
+                                  scans.find(
+                                    (scan) => scan.id === manga.mangaId
+                                  )?.title
+                                }
+                                className="rounded-lg"
+                              />
+                              <div
+                                style={{
+                                  width: progressPercentage,
+                                  ...(progressPercentage !== "100%" && {
+                                    borderTopRightRadius: "100px",
+                                    borderBottomRightRadius: "100px",
+                                  }),
+                                }}
+                                className="bg-black h-2 absolute bottom-0 left-0"
+                              />
+                            </div>
+                            <h1 className="mt-2">
+                              {
                                 scans.find((scan) => scan.id === manga.mangaId)
                                   ?.title
                               }
-                              className="rounded-lg"
-                            />
-                            <div
-                              style={{
-                                width: progressPercentage,
-                                ...(progressPercentage !== "100%" && {
-                                  borderTopRightRadius: "100px",
-                                  borderBottomRightRadius: "100px",
-                                }),
-                              }}
-                              className="bg-black h-2 absolute bottom-0 left-0"
-                            />
+                            </h1>
                           </div>
-                          <h1 className="mt-2">
-                            {
-                              scans.find((scan) => scan.id === manga.mangaId)
-                                ?.title
-                            }
-                          </h1>
-                        </div>
-                        <span className="text-gray-400">
-                          Chapitre {lastChapterNum}
-                        </span>
-                      </Link>
-                    </CarouselItem>
-                  );
-                })}
-              </CarouselContent>
-              <CarouselNext />
-              <CarouselPrevious />
-            </Carousel>
+                          <span className="text-gray-400">
+                            Chapitre {lastChapterNum}
+                          </span>
+                        </Link>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselNext />
+                <CarouselPrevious />
+              </Carousel>
+            ) : (
+              <div className="border-dashed border-2 border-gray-200 h-52 flex justify-center items-center flex-col w-4/5 lg:w-full rounded-md">
+                <h3 className="text-lg text-gray-600">Aucun manga en cours</h3>
+                <span className="text-sm text-gray-400">
+                  Commencez à lire un manga pour le voir ici
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
       <div className="justify-center flex">
-        {favoriteMangas.length > 0 && (
+        {isLoggedIn && (
           <div className="mb-5 w-2/3">
             <Link
               to="/library?tab=favorites"
@@ -226,45 +238,60 @@ export default function Index() {
                 <ArrowUpRight />
               </button>
             </Link>
-            <Carousel
-              opts={{
-                dragFree: true,
-              }}
-              className=""
-            >
-              <CarouselContent className="mb-5">
-                {favoriteMangas.map((manga) => (
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                    <Link
-                      className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
-                      to={`/manga/${manga.mangaId}`}
-                    >
-                      <div>
-                        <img
-                          src={
-                            scans.find((scan) => scan.id === manga.mangaId)?.img
-                          }
-                          alt={
-                            scans.find((scan) => scan.id === manga.mangaId)
-                              ?.title
-                          }
-                          className="rounded-lg"
-                        />
+            {favoriteMangas.length > 0 ? (
+              <Carousel
+                opts={{
+                  dragFree: true,
+                }}
+                className=""
+              >
+                <CarouselContent className="mb-5">
+                  {favoriteMangas.map((manga) => (
+                    <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                      <Link
+                        className="p-2 border-gray-100 border rounded-lg shadow-sm flex flex-col justify-between"
+                        to={`/manga/${manga.mangaId}`}
+                      >
+                        <div>
+                          <img
+                            src={
+                              scans.find((scan) => scan.id === manga.mangaId)
+                                ?.img
+                            }
+                            alt={
+                              scans.find((scan) => scan.id === manga.mangaId)
+                                ?.title
+                            }
+                            className="rounded-lg"
+                          />
 
-                        <h1 className="mt-2">
-                          {
-                            scans.find((scan) => scan.id === manga.mangaId)
-                              ?.title
-                          }
-                        </h1>
-                      </div>
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselNext />
-              <CarouselPrevious />
-            </Carousel>
+                          <h1 className="mt-2">
+                            {
+                              scans.find((scan) => scan.id === manga.mangaId)
+                                ?.title
+                            }
+                          </h1>
+                        </div>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselNext />
+                <CarouselPrevious />
+              </Carousel>
+            ) : (
+              <button
+                className="border-dashed border-2 border-gray-200 h-52 flex justify-center items-center flex-col w-4/5 lg:w-full rounded-md hover:border-gray-400"
+                onClick={() => setIsMangaSearchOpen(true)}
+              >
+                <h3 className="text-lg text-gray-600">
+                  Aucun manga en favoris
+                </h3>
+                <span className="text-sm text-gray-400">
+                  Appuie ici pour commencer à chercher des mangas !
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -377,23 +404,40 @@ export default function Index() {
             />
           </div>
         </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
-          {filteredScans.map((manga, i) => (
-            <Link to={`/manga/${manga.id}`} key={i}>
-              <div className="p-2 border-gray-100 border rounded-lg shadow-sm">
-                <img
-                  src={manga.img}
-                  alt={manga.title}
-                  className="rounded-lg"
-                  loading="lazy"
-                />
-                <h1 className="mt-2">{manga.title}</h1>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {filteredScans.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
+            {filteredScans.map((manga, i) => (
+              <Link to={`/manga/${manga.id}`} key={i}>
+                <div className="p-2 border-gray-100 border rounded-lg shadow-sm">
+                  <img
+                    src={manga.img}
+                    alt={manga.title}
+                    className="rounded-lg"
+                    loading="lazy"
+                  />
+                  <h1 className="mt-2">{manga.title}</h1>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center w-full">
+            <div className="border-dashed border-2 border-gray-200 h-52 flex justify-center items-center flex-col w-4/5 lg:w-1/2 rounded-md">
+              <h3 className="text-lg text-gray-600">Aucun résultat</h3>
+              <span className="text-sm text-gray-400">
+                Essayez de chercher autre chose
+              </span>
+            </div>
+          </div>
+        )}
       </div>
+      <MangaSearchDialog
+        isAutocompleteOpen={isMangaSearchOpen}
+        setIsAutocompleteOpen={setIsMangaSearchOpen}
+        onMangaNavigate={() => {
+          setIsMangaSearchOpen(false);
+        }}
+      />
     </div>
   );
 }
