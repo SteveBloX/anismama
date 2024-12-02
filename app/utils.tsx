@@ -110,3 +110,8 @@ export function submit(
     keepalive: keepAlive,
   });
 }
+
+export function getLastChapterFromProgress(progress: string) {
+  const parsedProgress = JSON.parse(progress);
+  return Object.keys(parsedProgress).sort((a, b) => b - a)[0];
+}

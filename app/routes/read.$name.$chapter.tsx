@@ -35,7 +35,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { getUser } from "~/session.server";
 import { prisma } from "~/db.server";
-import { submit } from "~/utils";
+import { getLastChapterFromProgress, submit } from "~/utils";
 import { useEffect, useState } from "react";
 import useDebounce from "~/hooks/useDebounce";
 import { Button } from "~/components/ui/button";
@@ -74,6 +74,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
   let isFavorited = false;
   let isWatchlisted = false;
+  let progress = {};
   let page = null;
   if (!params.name || !params.chapter)
     return new Response(null, { status: 400 });
@@ -128,17 +129,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }
   }
 
-  if (params.chapter === "latest" && !user) {
-    return redirect(`/read/${params.name}/1`);
-  }
   if (userManga) {
-    if (params.chapter === "latest") {
-      const progress = JSON.parse(userManga.progress);
-      const latestChapter = Object.keys(progress).sort((a, b) => b - a)[0];
-      return redirect(`/read/${params.name}/${latestChapter || "1"}`);
-    }
     isFavorited = userManga.isFavorited;
     isWatchlisted = userManga.isWatchlisted;
+    progress = userManga.progress;
     const pageData = JSON.parse(userManga?.progress)[params.chapter];
     if (pageData) {
       page = pageData.currentPage;
@@ -155,6 +149,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     page,
     provider: manga?.provider || Providers.animeSama,
     startedAt: userManga?.startedAt,
+    progress,
   });
 };
 
@@ -164,7 +159,7 @@ enum Action {
   FinishManga = "finishManga",
 }
 
-export function shouldRevalidate({ actionResult, defaultShouldRevalidate }) {
+export function shouldRevalidate() {
   return false;
 }
 
@@ -302,6 +297,7 @@ export default function Read() {
     provider: Providers;
     startedAt?: Date;
     chaptersDetails: MangaChapters["chaptersDetails"];
+    progress: string;
   } = useLoaderData();
   const navigate = useNavigate();
   const { revalidate } = useRevalidator();
@@ -545,9 +541,14 @@ export default function Read() {
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  onClick={() => {
-                    navigate(`/read/${data.mangaName}/latest`);
-                    setCurrentChapter(data.chaptersAmount);
+                  onClick={async () => {
+                    if (data.isConnected) {
+                      const lastChapter = getLastChapterFromProgress(
+                        data.progress
+                      );
+                      navigate(`/read/${data.mangaName}/${lastChapter}`);
+                      setCurrentChapter(parseInt(lastChapter));
+                    }
                   }}
                 >
                   <ArrowUpToLine />

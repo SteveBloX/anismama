@@ -28,7 +28,7 @@ import { prisma } from "~/db.server";
 import { UserManga } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
-import { normalizeString, submit } from "~/utils";
+import { getLastChapterFromProgress, normalizeString, submit } from "~/utils";
 import {
   Collapsible,
   CollapsibleContent,
@@ -561,7 +561,11 @@ export default function MangaDetails() {
                 </Button>
               )}
               {data.userManga && data.userManga.progress !== "{}" ? (
-                <Link to={`/read/${data.id}/latest`}>
+                <Link
+                  to={`/read/${data.id}/${getLastChapterFromProgress(
+                    data.userManga.progress
+                  )}`}
+                >
                   <Button variant="outline" className="w-full lg:w-unset">
                     Reprendre la lecture
                   </Button>
