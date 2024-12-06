@@ -95,9 +95,11 @@ export function ResponsiveDialog({
           >
             {submitText}
           </Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Annuler</Button>
-          </DrawerClose>
+          {!cancelButtonHidden && (
+            <DrawerClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DrawerClose>
+          )}
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

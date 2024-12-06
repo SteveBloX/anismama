@@ -55,6 +55,10 @@ import {
 import AnimatedStats from "~/components/stats";
 import { intervalToDuration } from "date-fns";
 import { MangaChapters } from "~/types";
+import { useMediaQuery } from "~/hooks/use-media-query";
+import { useToast } from "~/hooks/use-toast";
+import { Toaster } from "~/components/ui/toaster";
+import { ToastAction } from "~/components/ui/toast";
 
 export const meta: MetaFunction = ({ data }: { data: any }) => {
   if (!data) return [];
@@ -316,6 +320,7 @@ export default function Read() {
       setCurrentChapter(parseInt(data.chapterNumber));
     }
   }, []);
+  const isMobile = useMediaQuery("(max-width: 640px)");
 
   async function toggleOption(options: string[]) {
     const excluded = ["more", "home", "settings"];
@@ -493,8 +498,27 @@ export default function Read() {
     );
     setTotalMangaPages(total);
   }
+  const { toast } = useToast();
+  useEffect(() => {
+    if (!data.isConnected && currentChapter > 1) {
+      toast({
+        title: "Sauvegardez votre progression",
+        description:
+          "Connectez-vous ou créez un compte pour enregistrer votre progression",
+        action: (
+          <a
+            href={`/login?redirectTo=/read/${data.mangaName}/${currentChapter}`}
+          >
+            <ToastAction altText="Se connecter">Connection</ToastAction>
+          </a>
+        ),
+        duration: 3500,
+      });
+    }
+  }, []);
   return (
     <div className="flex flex-col justify-center">
+      <Toaster />
       <div
         className={`${
           floaterSide !== FloaterSide.Top ? "lg:fixed" : ""
@@ -735,66 +759,70 @@ export default function Read() {
             </div>
             <label>Espace en bas de page (pour une main)</label>
           </div>
-          <Separator />
-          <div className="flex justify-between items-center">
-            <p>Emplacement des controles</p>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={floaterSide}
-              onValueChange={(val: FloaterSide) => {
-                setFloaterSide(val);
-                updateLocalStorage({ newFloaterSide: val });
-              }}
-              size="sm"
-            >
-              <ToggleGroupItem value={FloaterSide.Left}>
-                <PanelLeft />
-              </ToggleGroupItem>
-              <ToggleGroupItem value={FloaterSide.Right}>
-                <PanelRight />
-              </ToggleGroupItem>
-              <ToggleGroupItem value={FloaterSide.Top}>
-                <PanelTop />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-          <div className="flex flex-col gap-1">
-            <p>Taille des controles</p>
-            <Select
-              value={floaterSize}
-              onValueChange={(val) => {
-                setFloaterSize(val as "default" | "sm" | "lg");
-                updateLocalStorage({
-                  newFloaterSize: val as "default" | "sm" | "lg",
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner..." />
-              </SelectTrigger>
-              <SelectContent>
-                {[
-                  {
-                    value: "sm",
-                    label: "Petit",
-                  },
-                  {
-                    value: "default",
-                    label: "Normal",
-                  },
-                  {
-                    value: "lg",
-                    label: "Grand",
-                  },
-                ].map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!isMobile && (
+            <>
+              <Separator />
+              <div className="flex justify-between items-center">
+                <p>Emplacement des controles</p>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  value={floaterSide}
+                  onValueChange={(val: FloaterSide) => {
+                    setFloaterSide(val);
+                    updateLocalStorage({ newFloaterSide: val });
+                  }}
+                  size="sm"
+                >
+                  <ToggleGroupItem value={FloaterSide.Left}>
+                    <PanelLeft />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value={FloaterSide.Right}>
+                    <PanelRight />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value={FloaterSide.Top}>
+                    <PanelTop />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p>Taille des controles</p>
+                <Select
+                  value={floaterSize}
+                  onValueChange={(val) => {
+                    setFloaterSize(val as "default" | "sm" | "lg");
+                    updateLocalStorage({
+                      newFloaterSize: val as "default" | "sm" | "lg",
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      {
+                        value: "sm",
+                        label: "Petit",
+                      },
+                      {
+                        value: "default",
+                        label: "Normal",
+                      },
+                      {
+                        value: "lg",
+                        label: "Grand",
+                      },
+                    ].map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
           <Separator />
           <div className="flex gap-4 items-center">
             <Checkbox
