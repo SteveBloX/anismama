@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="901ac22c-3f16-41b5-9085-eca37bcf2af0" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/reponsive-dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/reponsive-dialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/read.$name.$chapter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +112,10 @@
       <workItem from="1732966661580" duration="1557000" />
       <workItem from="1733080958233" duration="3335000" />
       <workItem from="1733164213720" duration="2344000" />
-      <workItem from="1733522021081" duration="1714000" />
+      <workItem from="1733522021081" duration="1961000" />
+      <workItem from="1733525971502" duration="1396000" />
+      <workItem from="1733667040370" duration="78000" />
+      <workItem from="1733849487733" duration="410000" />
     </task>
     <task id="LOCAL-00001" summary="upd">
       <option name="closed" value="true" />
