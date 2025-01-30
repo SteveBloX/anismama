@@ -11,6 +11,7 @@ export function recommendMangas(
 
   // 1. Calculer les scores pour chaque tag en fonction des mangas lus
   readMangas.forEach((manga) => {
+    if (!manga) return
     let score = 0;
     if (manga.isFavorited) {
       score += 2;
