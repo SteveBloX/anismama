@@ -13,20 +13,20 @@ export function recommendMangas(
   readMangas.forEach((manga) => {
     if (!manga) return
     let score = 0;
-    if (manga.isFavorited) {
+    if (manga?.isFavorited) {
       score += 2;
     }
-    if (manga.isCrushed) {
+    if (manga?.isCrushed) {
       score += 5;
     }
-    if (manga.finished && manga.rating && manga.rating > 2) {
-      score += Math.pow(manga.timesFinished, manga.rating / 2.5);
+    if (manga?.finished && manga?.rating && manga?.rating > 2) {
+      score += Math.pow(manga?.timesFinished, manga?.rating / 2.5);
     }
-    if (manga.rating) {
-      score += manga.rating * 2 - 5;
+    if (manga?.rating) {
+      score += manga?.rating * 2 - 5;
     }
 
-    manga.tags.forEach((tag) => {
+    manga?.tags.forEach((tag) => {
       if (!tagScores[tag]) {
         tagScores[tag] = 0;
       }
